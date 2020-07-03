@@ -16,7 +16,7 @@ def generate_folder(folder_name):
 		os.system('mkdir -p {}'.format(folder_name))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--docker", type=str2bool, default = False)
+parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'resnet34')

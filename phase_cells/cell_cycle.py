@@ -18,9 +18,10 @@ def generate_folder(folder_name):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'resnet34')
-parser.add_argument("--down", type=str2bool, default = False)
+parser.add_argument("--down", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
@@ -33,8 +34,9 @@ print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
+DATA_DIR = '/data/datasets/cell_cycle2' if args.docker else './data/cell_cycle2'
 
-DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
+# DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
 
 if args.down:
 	train_dim = 512; val_dim = 992
@@ -296,7 +298,7 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, train_dim, train_dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_classes)
 
-model_folder = './models/{}'.format(model_name)
+model_folder = '/data/models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
 generate_folder(model_folder)
 
 

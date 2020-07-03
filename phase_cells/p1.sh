@@ -1,0 +1,1 @@
+python cell_cycle.py --net_type Unet --backbone efficientnetb0 --pre_train True --batch_size 8 --epoch 400 --lr 5e-4 --gpu 1
