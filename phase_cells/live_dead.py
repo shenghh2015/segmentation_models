@@ -21,6 +21,7 @@ parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--epoch", type=int, default = 300)
+parser.add_argument("--dim", type=int, default = 320)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
@@ -28,7 +29,8 @@ parser.add_argument("--class_balanced", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
-model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}'.format(args.net_type, args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced)
+model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}'.format(args.net_type,\
+		 args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -158,15 +160,15 @@ def round_clip_0_1(x, **kwargs):
     return x.round().clip(0, 1)
 
 # define heavy augmentations
-def get_training_augmentation():
+def get_training_augmentation(dim = 512):
     train_transform = [
 
         A.HorizontalFlip(p=0.5),
 
         A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
 
-        A.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
-        A.RandomCrop(height=512, width=512, always_apply=True),
+        A.PadIfNeeded(min_height=dim, min_width=dim, always_apply=True, border_mode=0),
+        A.RandomCrop(height=dim, width=dim, always_apply=True),
 
         A.IAAAdditiveGaussianNoise(p=0.2),
         A.IAAPerspective(p=0.5),
@@ -201,10 +203,10 @@ def get_training_augmentation():
     return A.Compose(train_transform)
 
 
-def get_validation_augmentation():
+def get_validation_augmentation(dim = 832):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
-        A.PadIfNeeded(832, 832)
+        A.PadIfNeeded(dim, dim)
 #         A.PadIfNeeded(384, 480)
     ]
     return A.Compose(test_transform)
@@ -270,7 +272,7 @@ train_dataset = Dataset(
     x_train_dir, 
     y_train_dir, 
     classes=CLASSES, 
-    augmentation=get_training_augmentation(),
+    augmentation=get_training_augmentation(args.dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
@@ -288,8 +290,8 @@ valid_dataloader = Dataloder(valid_dataset, batch_size=1, shuffle=False)
 
 print(train_dataloader[0][0].shape)
 # check shapes for errors
-assert train_dataloader[0][0].shape == (BATCH_SIZE, 512, 512, 3)
-assert train_dataloader[0][1].shape == (BATCH_SIZE, 512, 512, n_classes)
+assert train_dataloader[0][0].shape == (BATCH_SIZE, args.dim, args.dim, 3)
+assert train_dataloader[0][1].shape == (BATCH_SIZE, args.dim, args.dim, n_classes)
 
 model_folder = '/data/models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
 generate_folder(model_folder)

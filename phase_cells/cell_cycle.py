@@ -23,13 +23,15 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--down", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 300)
+parser.add_argument("--dim", type=int, default = 320)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}'.format(args.net_type, args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.down)
+model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -39,7 +41,7 @@ DATA_DIR = '/data/datasets/cell_cycle2' if args.docker else './data/cell_cycle2'
 # DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
 
 if args.down:
-	train_dim = 512; val_dim = 992
+	train_dim = args.dim; val_dim = 992
 else:
 	train_dim = 800; val_dim = 1942
 
