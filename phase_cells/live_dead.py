@@ -34,7 +34,7 @@ print(model_name)
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 
-DATA_DIR = '/data/datasets/live_dead' if docker else './data/live_dead'
+DATA_DIR = '/data/datasets/live_dead' if args.docker else './data/live_dead'
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
 
@@ -291,7 +291,7 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, 512, 512, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, 512, 512, n_classes)
 
-model_folder = '/data/models/{}'.format(model_name) if docker else './models/{}'.format(model_name)
+model_folder = '/data/models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
 generate_folder(model_folder)
 
 
