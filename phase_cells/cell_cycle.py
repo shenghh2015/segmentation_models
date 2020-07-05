@@ -9,6 +9,10 @@ import segmentation_models as sm
 from segmentation_models import Unet, Linknet, PSPNet, FPN
 sm.set_framework('tf.keras')
 
+from helper_function import plot_history
+from helper_function import precision, recall, f1_score
+from sklearn.metrics import confusion_matrix
+
 def str2bool(value):
     return value.lower() == 'true'
 
@@ -23,15 +27,17 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--down", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 300)
-parser.add_argument("--dim", type=int, default = 320)
+parser.add_argument("--dim", type=int, default = 512)
+parser.add_argument("--bk_weight", type=float, default = 0.5)
+parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.down, args.dim)
+model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -75,14 +81,20 @@ class Dataset:
             self, 
             images_dir, 
             masks_dir, 
-            classes=None, 
+            classes=None,
+            nb_data=None,
             augmentation=None, 
             preprocessing=None,
     ):
-        self.ids = os.listdir(images_dir)
+        #self.ids = os.listdir(images_dir)
+        id_list = os.listdir(images_dir)
+        if nb_data ==None:
+            self.ids = id_list
+        else:
+            self.ids = id_list[:int(min(nb_data,len(id_list)))]
         self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
-        
+        print(len(self.images_fps)); print(len(self.masks_fps))        
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
         
@@ -262,7 +274,7 @@ optim = tf.keras.optimizers.Adam(LR)
 
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
-dice_loss = sm.losses.DiceLoss(class_weights=np.array([1, 1, 1, 0.5]))
+dice_loss = sm.losses.DiceLoss(class_weights=np.array([1, 1, 1, args.bk_weight]))
 focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 total_loss = dice_loss + (1 * focal_loss)
 
@@ -278,7 +290,8 @@ model.compile(optim, total_loss, metrics)
 train_dataset = Dataset(
     x_train_dir, 
     y_train_dir, 
-    classes=CLASSES, 
+    classes=CLASSES,
+    nb_data=args.train, 
     augmentation=get_training_augmentation(train_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
@@ -320,6 +333,9 @@ history = model.fit_generator(
     validation_steps=len(valid_dataloader),
 )
 
+# save the training information
+plot_history(model_folder+'/train_history.png',history)
+
 # evaluate model
 test_dataset = Dataset(
     x_test_dir, 
@@ -337,6 +353,43 @@ print("Loss: {:.5}".format(scores[0]))
 for metric, value in zip(metrics, scores[1:]):
     print("mean {}: {:.5}".format(metric.__name__, value))
 
-with open(model_folder+'/metric.txt','w+') as f:
+# calculate the pixel-level classification performance
+pr_masks = model.predict(test_dataloader); pr_maps = np.argmax(pr_masks,axis=-1)
+gt_masks = []
+for i in range(len(test_dataset)):
+    _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
+gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
+cf_mat = confusion_matrix(y_true, y_pred)
+cf_mat_reord = np.zeros(cf_mat.shape)
+cf_mat_reord[1:,1:]=cf_mat[:3,:3];cf_mat_reord[0,1:]=cf_mat[3,0:3]; cf_mat_reord[1:,0]=cf_mat[0:3,3]
+cf_mat_reord[0,0] = cf_mat[3,3]
+print('Confusion matrix:')
+print(cf_mat_reord)
+prec_scores = []; recall_scores = []; f1_scores = []; iou_scores=[]
+for i in range(cf_mat.shape[0]):
+    prec_scores.append(precision(i,cf_mat_reord))
+    recall_scores.append(recall(i,cf_mat_reord))
+    f1_scores.append(f1_score(i,cf_mat_reord))
+print('Precision:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
+print('Recall:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
+# f1 score
+print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
+print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
+
+with open(model_folder+'/metric_summary.txt','w+') as f:
+	# save iou and dice
 	for metric, value in zip(metrics, scores[1:]):
 		f.write("mean {}: {:.5}\n".format(metric.__name__, value))
+	# save confusion matrix
+	f.write('confusion matrix:\n')
+	np.savetxt(f, cf_mat_reord, fmt='%-7d')
+	# save precision
+	f.write('precision:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
+	f.write('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
+	# save recall
+	f.write('recall:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
+	f.write('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
+	# save f1-score
+	f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
+	f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
