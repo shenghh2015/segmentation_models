@@ -1,1 +1,1 @@
-python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 5 --dim 512 --train 400 --epoch 200 --lr 5e-4 --gpu 2
+python cell_cycle.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 5 --dim 512 --epoch 200 --lr 5e-4 --train 1100 --bk_weight 0.9 --gpu 2
