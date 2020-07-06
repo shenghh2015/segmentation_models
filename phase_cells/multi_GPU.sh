@@ -100,18 +100,18 @@
 # JOB: python cell_cycle.py --net_type Unet --backbone efficientnetb7 --pre_train True --batch_size 2 --dim 512 --epoch 200 --lr 5e-4 --train 1100 --gpu 2
 # JOB: python cell_cycle.py --net_type FPN --backbone efficientnetb7 --pre_train True --batch_size 2 --dim 512 --epoch 600 --lr 5e-5 --train 1100 --gpu 3
 
-# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 100 --one_dataset True --gpu 0
-# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 300 --one_dataset True --gpu 1
-# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 500 --one_dataset True --gpu 2
-# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 700 --one_dataset True --gpu 3
+## July 06
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 100 --one_dataset True --gpu 0
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 300 --one_dataset True --gpu 1
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 500 --one_dataset True --gpu 2
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 700 --one_dataset True --gpu 3
 
 # JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 0
 # JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 1
 # JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 100 --one_dataset True --gpu 2
 # JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 300 --one_dataset True --gpu 3
 
-## July 06
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 500 --one_dataset True --gpu 0
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 700 --one_dataset True --gpu 1
-JOB: python live_dead.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 2
-JOB: python live_dead.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 3
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 500 --one_dataset True --gpu 0
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --train 700 --one_dataset True --gpu 1
+# JOB: python live_dead.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 2
+# JOB: python live_dead.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --train 900 --one_dataset True --gpu 3
