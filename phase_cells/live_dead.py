@@ -31,27 +31,34 @@ parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
+parser.add_argument("--one_dataset", type=str2bool, default = False)
 parser.add_argument("--class_balanced", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
-model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}'.format(args.net_type,\
-		 args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim, args.train,args.bk_weight)
+model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}'.format(args.net_type,\
+		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim,\
+		 	args.train, args.bk_weight, args.one_dataset)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 
 DATA_DIR = '/data/datasets/live_dead' if args.docker else './data/live_dead'
-x_train_dir = os.path.join(DATA_DIR, 'train_images')
+train_image_set = 'train_images2' if args.one_dataset else 'train_images'
+val_image_set = 'val_images2' if args.one_dataset else 'val_images'
+test_image_set = 'test_images2' if args.one_dataset else 'test_images'
+
+x_train_dir = os.path.join(DATA_DIR, train_image_set)
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
 
-x_valid_dir = os.path.join(DATA_DIR, 'val_images')
+x_valid_dir = os.path.join(DATA_DIR, val_image_set)
 y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
 
-x_test_dir = os.path.join(DATA_DIR, 'test_images')
+x_test_dir = os.path.join(DATA_DIR, test_image_set)
 y_test_dir = os.path.join(DATA_DIR, 'test_masks')
 
+print(x_train_dir); print(x_valid_dir); print(x_test_dir)
 # classes for data loading and preprocessing
 class Dataset:
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
