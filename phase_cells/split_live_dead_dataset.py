@@ -10,7 +10,7 @@ train_folder=os.path.join(dataset_folder,'train_images')
 valid_folder=os.path.join(dataset_folder,'val_images')
 test_folder=os.path.join(dataset_folder,'test_images')
 
-image_folder = test_folder; new_folder = image_folder+'2'
+image_folder = train_folder; new_folder = image_folder+'2'
 if not os.path.exists(new_folder):
 	os.system('mkdir -p {}'.format(new_folder))
 image_names = os.listdir(image_folder)
