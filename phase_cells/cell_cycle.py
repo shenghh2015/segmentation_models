@@ -25,9 +25,11 @@ parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'resnet34')
+parser.add_argument("--dataset", type=str, default = 'cell_cycle2')
 parser.add_argument("--down", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
+parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--bk_weight", type=float, default = 0.5)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--batch_size", type=int, default = 2)
@@ -36,20 +38,24 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight)
+model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, args.dataset.split('_')[-1])
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-DATA_DIR = '/data/datasets/cell_cycle2' if args.docker else './data/cell_cycle2'
+DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
 
 # DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
 
 if args.down:
-	train_dim = args.dim; val_dim = 992
+	train_dim = args.dim; 
+	if args.dataset == 'cell_cycle2':
+		val_dim = 992
+	else:
+		val_dim = 1984
 else:
-	train_dim = 800; val_dim = 1942
+	train_dim = 800; val_dim = 1984
 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
@@ -180,12 +186,12 @@ def round_clip_0_1(x, **kwargs):
     return x.round().clip(0, 1)
 
 # define heavy augmentations
-def get_training_augmentation(dim):
+def get_training_augmentation(dim, rot = 0):
     train_transform = [
 
         A.HorizontalFlip(p=0.5),
 
-        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
+        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=rot, shift_limit=0.1, p=1, border_mode=0),
 
         A.PadIfNeeded(min_height=dim, min_width=dim, always_apply=True, border_mode=0),
         A.RandomCrop(height=dim, width=dim, always_apply=True),
@@ -292,7 +298,7 @@ train_dataset = Dataset(
     y_train_dir, 
     classes=CLASSES,
     nb_data=args.train, 
-    augmentation=get_training_augmentation(train_dim),
+    augmentation=get_training_augmentation(train_dim, args.rot),
     preprocessing=get_preprocessing(preprocess_input),
 )
 

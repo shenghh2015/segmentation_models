@@ -48,6 +48,10 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
 
+if args.dataset == 'live_dead':
+	val_dim = 832
+elif args.dataset == 'live_dead_1664':
+	val_dim = 1664
 
 train_image_set = 'train_images2' if args.one_dataset else 'train_images'
 val_image_set = 'val_images2' if args.one_dataset else 'val_images'
@@ -306,7 +310,7 @@ valid_dataset = Dataset(
     x_valid_dir, 
     y_valid_dir, 
     classes=CLASSES, 
-    augmentation=get_validation_augmentation(),
+    augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
@@ -346,7 +350,7 @@ test_dataset = Dataset(
     x_test_dir, 
     y_test_dir, 
     classes=CLASSES, 
-    augmentation=get_validation_augmentation(),
+    augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
