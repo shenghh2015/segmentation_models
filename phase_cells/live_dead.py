@@ -28,6 +28,8 @@ parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--bk_weight", type=float, default = 0.5)
 parser.add_argument("--batch_size", type=int, default = 2)
+parser.add_argument("--dataset", type=str, default = 'live_dead')
+parser.add_argument("--rot", type=float, default = 45)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
@@ -36,15 +38,17 @@ parser.add_argument("--class_balanced", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
-model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}'.format(args.net_type,\
+model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}-rot-{}-set-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim,\
-		 	args.train, args.bk_weight, args.one_dataset)
+		 	args.train, args.bk_weight, args.one_dataset, args.rot, args.dataset.split('_')[-1])
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 
-DATA_DIR = '/data/datasets/live_dead' if args.docker else './data/live_dead'
+DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
+
+
 train_image_set = 'train_images2' if args.one_dataset else 'train_images'
 val_image_set = 'val_images2' if args.one_dataset else 'val_images'
 test_image_set = 'test_images2' if args.one_dataset else 'test_images'
@@ -180,12 +184,12 @@ def round_clip_0_1(x, **kwargs):
     return x.round().clip(0, 1)
 
 # define heavy augmentations
-def get_training_augmentation(dim = 512):
+def get_training_augmentation(dim = 512, rot_limit = 45):
     train_transform = [
 
         A.HorizontalFlip(p=0.5),
 
-        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
+        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=rot_limit, shift_limit=0.1, p=1, border_mode=0),
 
         A.PadIfNeeded(min_height=dim, min_width=dim, always_apply=True, border_mode=0),
         A.RandomCrop(height=dim, width=dim, always_apply=True),
@@ -293,7 +297,7 @@ train_dataset = Dataset(
     y_train_dir, 
     classes=CLASSES,
     nb_data=args.train,
-    augmentation=get_training_augmentation(args.dim),
+    augmentation=get_training_augmentation(args.dim, args.rot),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
