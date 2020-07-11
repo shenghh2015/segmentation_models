@@ -1,4 +1,8 @@
 
+def generate_folder(folder):
+	import os
+	if not os.path.exists(folder):
+		os.system('mkdir -p {}'.format(folder))
 
 # plot training and validation loss
 def plot_history(file_name, history):

@@ -27,6 +27,7 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--dataset", type=str, default = 'cell_cycle2')
 parser.add_argument("--down", type=str2bool, default = True)
+parser.add_argument("--down_factor", type=int, default = 1)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
@@ -38,24 +39,28 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, args.dataset.split('_')[-1])
+model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}-fact-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, args.dataset.split('_')[-1], args.down_factor)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
+if args.down_factor <2:
+	DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
 
-# DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
+	# DATA_DIR = './data/cell_cycle2' if args.down else './data/cell_cycle'
 
-if args.down:
-	train_dim = args.dim; 
-	if args.dataset == 'cell_cycle2':
-		val_dim = 992
+	if args.down:
+		train_dim = args.dim; 
+		if args.dataset == 'cell_cycle2':
+			val_dim = 992
+		else:
+			val_dim = 1984
 	else:
-		val_dim = 1984
+		train_dim = 800; val_dim = 1984
 else:
-	train_dim = 800; val_dim = 1984
+	DATA_DIR = '/data/datasets/{}/down_x{}'.format(args.dataset, args.down_factor)
+	val_dim = 496
 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
