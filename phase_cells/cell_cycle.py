@@ -60,7 +60,7 @@ if args.down_factor <2:
 		train_dim = 800; val_dim = 1984
 else:
 	DATA_DIR = '/data/datasets/{}/down_x{}'.format(args.dataset, args.down_factor)
-	val_dim = 496
+	val_dim = 512; train_dim = args.dim
 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
