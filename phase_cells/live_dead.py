@@ -32,6 +32,7 @@ parser.add_argument("--dataset", type=str, default = 'live_dead')
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
+parser.add_argument("--frozen", type=str2bool, default = False)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
 parser.add_argument("--down_factor", type=int, default = 1)
@@ -40,9 +41,9 @@ parser.add_argument("--class_balanced", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
-model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}-rot-{}-set-{}-fact-{}-loss-{}'.format(args.net_type,\
+model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}-rot-{}-set-{}-fact-{}-loss-{}-frozen-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim,\
-		 	args.train, args.bk_weight, args.one_dataset, args.rot, args.dataset.split('_')[-1], args.down_factor, args.loss)
+		 	args.train, args.bk_weight, args.one_dataset, args.rot, args.dataset.split('_')[-1], args.down_factor, args.loss, args.frozen)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -281,7 +282,7 @@ net_func = globals()[args.net_type]
 
 encoder_weights='imagenet' if args.pre_train else None
 
-model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+model = net_func(BACKBONE, encoder_weights=encoder_weights, encoder_freeze=args.frozen, classes=n_classes, activation=activation)
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer

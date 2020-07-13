@@ -193,7 +193,12 @@
 # JOB: python cell_cycle.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 800 --down_factor 1 --epoch 150 --dataset cell_cycle_1984 --lr 5e-4 --train 1100 --gpu 0 --loss jaccard
 # JOB: python cell_cycle.py --net_type FPN --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --down_factor 1 --epoch 150 --dataset cell_cycle_1984 --lr 5e-4 --train 1100 --gpu 1 --loss jaccard
 
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 0 --loss dice
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 1 --loss jaccard
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 2 --loss focal+jaccard
-JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 3 --loss focal+jaccard+dice
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 0 --loss dice
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 1 --loss jaccard
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 2 --loss focal+jaccard
+# JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 3 --loss focal+jaccard+dice
+
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 0 --frozen True --loss focal+dice
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced False --gpu 1 --frozen True --loss focal+dice
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced True --gpu 2 --frozen True --loss focal+jaccard
+JOB: python live_dead.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --dataset live_dead --down_factor 1 --train 900 --class_balanced False --gpu 3 --frozen True --loss focal+jaccard

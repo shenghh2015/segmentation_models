@@ -15,9 +15,11 @@ import glob
 from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-model_root_folder = '/data/models/report_results/'
+# model_root_folder = '/data/models/report_results/'
+model_root_folder = '/data/models/'
 
-model_name = 'livedead-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-14-lr-0.0005-banl-False-dim-512-train-900-bk-0.5-one-True'
+model_name = 'livedead-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-banl-True-dim-512-train-900-bk-0.5-one-True-rot-0-set-dead-fact-1-loss-focal+jaccard'
+# model_name = 'livedead-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-14-lr-0.0005-banl-False-dim-512-train-900-bk-0.5-one-True'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -31,7 +33,8 @@ else:
 
 for v in range(len(splits)):
 	if splits[v]=='set':
-		dataset = splits[v+1]
+		if splits[v+1] == 'dead':
+			dataset = 'live_'+splits[v+1]
 	elif splits[v] == 'net':
 		net_arch = splits[v+1]
 	elif splits[v] == 'bone':
@@ -217,12 +220,12 @@ model.compile(optim, total_loss, metrics)
 
 # evaluate model
 subsets = ['train', 'val', 'test']
-subset = subsets[0]
+subset = subsets[2]
 
 if subset == 'val':
-	x_test_dir = x_val_dir
+	x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
 elif subset == 'train':
-	x_test_dir = x_train_dir
+	x_test_dir = x_train_dir; y_test_dir = y_train_dir
 
 test_dataset = Dataset(
     x_test_dir, 
