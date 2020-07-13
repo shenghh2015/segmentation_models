@@ -46,9 +46,9 @@ for i in range(len(image_names)):
 	labels = np.unique(mask)
 	if 1 in labels:
 		live_list.append(img_name)
-	elif 2 in labels:
+	if 2 in labels:
 		inter_list.append(img_name)
-	elif 3 in labels:
+	if 3 in labels:
 		dead_list.append(img_name)
 	if (1 in labels) and (2 in labels) and (3 in labels):
 		all_list.append(img_name)

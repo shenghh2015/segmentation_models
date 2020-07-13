@@ -287,7 +287,7 @@ model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, a
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
 
-class_weights = [1, 1, 1, args.bk_weight]
+class_weights = [2,1,4,args.bk_weight] if args.class_balanced else [1, 1, 1, args.bk_weight]
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
 if args.loss =='focal+dice':
