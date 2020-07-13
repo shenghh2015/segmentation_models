@@ -29,19 +29,20 @@ parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--bk_weight", type=float, default = 0.5)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--dataset", type=str, default = 'live_dead')
-parser.add_argument("--rot", type=float, default = 45)
+parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
+parser.add_argument("--loss", type=str, default = 'focal+dice')
 parser.add_argument("--down_factor", type=int, default = 1)
-parser.add_argument("--one_dataset", type=str2bool, default = False)
+parser.add_argument("--one_dataset", type=str2bool, default = True)
 parser.add_argument("--class_balanced", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
-model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}-rot-{}-set-{}-fact-{}'.format(args.net_type,\
+model_name = 'livedead-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-banl-{}-dim-{}-train-{}-bk-{}-one-{}-rot-{}-set-{}-fact-{}-loss-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.class_balanced, args.dim,\
-		 	args.train, args.bk_weight, args.one_dataset, args.rot, args.dataset.split('_')[-1], args.down_factor)
+		 	args.train, args.bk_weight, args.one_dataset, args.rot, args.dataset.split('_')[-1], args.down_factor, args.loss)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -289,10 +290,20 @@ optim = tf.keras.optimizers.Adam(LR)
 class_weights = [1,0.5,1,args.bk_weight] if args.class_balanced else [1, 1, 1, args.bk_weight]
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
-dice_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
-focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
-total_loss = dice_loss + (1 * focal_loss)
-
+if args.loss =='focal+dice':
+	dice_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
+	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
+	total_loss = dice_loss + (1 * focal_loss)
+elif args.loss =='dice':
+	total_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
+elif args.loss =='jaccard':
+	total_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
+elif args.loss =='focal+jaccard':
+	dice_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
+	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
+	total_loss = dice_loss + (1 * focal_loss)
+# 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
+# 	total_loss = dice_loss + (1 * focal_loss)
 # actulally total_loss can be imported directly from library, above example just show you how to manipulate with losses
 # total_loss = sm.losses.binary_focal_dice_loss # or sm.losses.categorical_focal_dice_loss 
 
