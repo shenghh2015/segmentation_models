@@ -229,6 +229,52 @@ def recall(gt, pr, class_weights=1, class_indexes=None, smooth=SMOOTH, per_image
 
     return score
 
+# def psnr(gt, pr, max_val = 1.0, per_image=False, **kwargs):
+#     r"""Calculate PSNR between the ground truth (gt) and the prediction (pr).
+# 
+#     where:
+#          - tp - true positives;
+#          - fp - false positives;
+# 
+#     Args:
+#         gt: ground truth 4D keras tensor (B, H, W, C) or (B, C, H, W)
+#         pr: prediction 4D keras tensor (B, H, W, C) or (B, C, H, W)
+#         max_val: 1.0 or 255.0
+# 
+#     Returns:
+#         float: psnr score
+#     """
+#     backend = kwargs['backend']
+# 
+# #     gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
+# #     pr = round_if_needed(pr, threshold, **kwargs)
+# #     axes = get_reduce_axes(per_image, **kwargs)
+# 
+#     psnrs = backend.image.psnr(gt, pr, max_val = max_val)
+# 
+#     score = average(psnrs, per_image, None, **kwargs)
+# 
+#     return score
+# 
+# def pearson(gt, pr, **kwargs):
+#     r"""Calculate Pearson coefficient between the ground truth (gt) and the prediction (pr).
+# 
+#     Args:
+#         gt: ground truth 4D keras tensor (B, H, W, C) or (B, C, H, W)
+#         pr: prediction 4D keras tensor (B, H, W, C) or (B, C, H, W)
+# 
+#     Returns:
+#         float: person coefficient score
+#     """
+#     backend = kwargs['backend']
+# 
+# #     gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
+# #     pr = round_if_needed(pr, threshold, **kwargs)
+# #     axes = get_reduce_axes(per_image, **kwargs)
+# 
+#     score = backend.contrib.metrics.streaming_pearson_correlation(gt, pr)
+# 
+#     return score
 
 # ----------------------------------------------------------------
 #   Loss Functions
