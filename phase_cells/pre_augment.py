@@ -15,7 +15,7 @@ generate_folder(down_dataset_dir)
 subsets = ['train', 'test', 'val']
 
 # for subset in subsets:
-subset = subsets[0]
+subset = subsets[2]
 print('>>>> processing subset {}'.format(subset))
 if dataset == 'live_dead':
 	image_folder = dataset_dir +'/{}_images2'.format(subset)
