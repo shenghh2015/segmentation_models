@@ -13,7 +13,7 @@ from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
 sm.set_framework('tf.keras')
 
 from helper_function import plot_history_flu
-from helper_function import precision, recall, f1_score
+from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from sklearn.metrics import confusion_matrix
 
 def str2bool(value):
@@ -254,7 +254,7 @@ preprocess_input = sm.get_preprocessing(BACKBONE)
 # define network parameters
 # n_classes = 1 if len(CLASSES) == 1 else (len(CLASSES) + 1)  # case for binary and multiclass segmentation
 n_classes = 2
-activation = 'linear' if n_classes == 2 else 'softmax'
+activation = 'sigmoid' if n_classes == 2 else 'softmax'
 
 #create model
 net_func = globals()[args.net_type]
