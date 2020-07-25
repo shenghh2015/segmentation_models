@@ -7,7 +7,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
-sys.path.append('../')
+# sys.path.append('../')
 import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
 sm.set_framework('tf.keras')
