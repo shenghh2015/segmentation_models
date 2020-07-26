@@ -255,6 +255,9 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks)
+# verify the loaded data
+print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
+
 # save prediction examples
 plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
 from helper_function import plot_flu_prediction
