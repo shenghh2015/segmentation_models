@@ -177,42 +177,42 @@ def round_clip_0_1(x, **kwargs):
 def get_training_augmentation(dim, rot = 0):
     train_transform = [
 
-        A.HorizontalFlip(p=0.5),
-
-        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=rot, shift_limit=0.1, p=1, border_mode=0),
-
+#         A.HorizontalFlip(p=0.5),
+# 
+#         A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=rot, shift_limit=0.1, p=1, border_mode=0),
+# 
         A.PadIfNeeded(min_height=dim, min_width=dim, always_apply=True, border_mode=0),
         A.RandomCrop(height=dim, width=dim, always_apply=True),
-
-        A.IAAAdditiveGaussianNoise(p=0.2),
-        A.IAAPerspective(p=0.5),
-
-        A.OneOf(
-            [
-                A.CLAHE(p=1),
-                A.RandomBrightness(p=1),
-                A.RandomGamma(p=1),
-            ],
-            p=0.9,
-        ),
-
-        A.OneOf(
-            [
-                A.IAASharpen(p=1),
-                A.Blur(blur_limit=3, p=1),
-                A.MotionBlur(blur_limit=3, p=1),
-            ],
-            p=0.9,
-        ),
-
-        A.OneOf(
-            [
-                A.RandomContrast(p=1),
-                A.HueSaturationValue(p=1),
-            ],
-            p=0.9,
-        ),
-        A.Lambda(mask=round_clip_0_1)
+# 
+#         A.IAAAdditiveGaussianNoise(p=0.2),
+#         A.IAAPerspective(p=0.5),
+# 
+#         A.OneOf(
+#             [
+#                 A.CLAHE(p=1),
+#                 A.RandomBrightness(p=1),
+#                 A.RandomGamma(p=1),
+#             ],
+#             p=0.9,
+#         ),
+# 
+#         A.OneOf(
+#             [
+#                 A.IAASharpen(p=1),
+#                 A.Blur(blur_limit=3, p=1),
+#                 A.MotionBlur(blur_limit=3, p=1),
+#             ],
+#             p=0.9,
+#         ),
+# 
+#         A.OneOf(
+#             [
+#                 A.RandomContrast(p=1),
+#                 A.HueSaturationValue(p=1),
+#             ],
+#             p=0.9,
+#         ),
+#         A.Lambda(mask=round_clip_0_1)
     ]
     return A.Compose(train_transform)
 
@@ -347,6 +347,8 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks)
+# save prediction examples
+
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])

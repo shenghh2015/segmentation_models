@@ -25,12 +25,35 @@ def plot_history_flu(file_name, history):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
 	from matplotlib.figure import Figure
-	rows, cols, size = 1,2,5
+	rows, cols, size = 1,2,4
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	ax[0].plot(history.history['loss']);ax[0].plot(history.history['val_loss'])
 	ax[0].set_ylabel('MSE');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
 	ax[1].plot(history.history['psnr']);ax[1].plot(history.history['val_psnr'])
 	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
+def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	from random import sample
+	font_size = 24
+	indices = sample(range(gt_maps.shape[0]),nb_images)
+	rows, cols, size = nb_images,4,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	for i in range(len(indices)):
+		idx = indices[i]
+		image, gt_map, pr_map = images[idx,:].squeeze(), gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
+		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
+		err_map = np.sum(np.abs(gt_map-pr_map),axis=-1)
+		gt_map_rgb = np.zeros(image.shape,dtype=np.uint8); gt_map_rgb[:,:,:-1]=np.uint8((gt_map-gt_map.min())/(gt_map.max()-gt_map.min())*255)
+		pr_map_rgb = np.zeros(image.shape,dtype=np.uint8); pr_map_rgb[:,:,:-1]=np.uint8((pr_map-pr_map.min())/(pr_map.max()-pr_map.min())*255)
+		ax[i,0].imshow(image[::4,::4,:]); ax[i,1].imshow(gt_map_rgb[::4,::4,:]); 
+		ax[i,2].imshow(pr_map_rgb[::4,::4,:]); ax[i,3].imshow(err_map[::4,::4], cmap='Blues')
+		if i == 0:
+			ax[i,0].set_title('Image',fontsize=font_size); ax[i,1].set_title('GT',fontsize=font_size); 
+			ax[i,2].set_title('Pred',fontsize=font_size); ax[i,3].set_title('Err Map',fontsize=font_size); 
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
 
 # calculate the IoU and dice scores
@@ -88,11 +111,15 @@ def calculate_psnr(imgs1, imgs2):
 	psnr_scores = 20*np.log10(1.0/np.sqrt(mse))
 	return np.mean(psnr_scores), psnr_scores
 
+SMOOTH= 1e-6; seed = 0
 def calculate_pearsonr(imgs1, imgs2):
 	from scipy import stats
+	import numpy as np
 	scores = []
+	SMOOTH_ = np.random.random(imgs1[0,:].flatten().shape)*SMOOTH
 	for i in range(imgs1.shape[0]):
 		flat1 = imgs1[i,:].flatten(); flat2 = imgs2[i,:].flatten()
+		flat1 = SMOOTH_ + flat1; flat2 = SMOOTH_ + flat2
 		score, _= stats.pearsonr(flat1, flat2)
 		scores.append(score)
 	return np.mean(scores), scores

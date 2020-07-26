@@ -20,6 +20,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
+# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 model_folder = model_root_folder+model_name
 
@@ -56,6 +57,7 @@ for img_fn in image_fns:
 	image = io.imread(image_dir+'/{}'.format(img_fn)); images.append(image)
 	gt_map =  io.imread(map_dir+'/{}'.format(img_fn)); gt_maps.append(gt_map)
 images = np.stack(images); gt_maps = np.stack(gt_maps) # an array of image and ground truth label maps
+gt_maps = gt_maps[:,:,:,:-1]
 
 # classes for data loading and preprocessing
 class Dataset:
@@ -169,43 +171,8 @@ def round_clip_0_1(x, **kwargs):
 # define heavy augmentations
 def get_training_augmentation(dim, rot = 0):
     train_transform = [
-
-        A.HorizontalFlip(p=0.5),
-
-        A.ShiftScaleRotate(scale_limit=0.5, rotate_limit=rot, shift_limit=0.1, p=1, border_mode=0),
-
         A.PadIfNeeded(min_height=dim, min_width=dim, always_apply=True, border_mode=0),
         A.RandomCrop(height=dim, width=dim, always_apply=True),
-
-        A.IAAAdditiveGaussianNoise(p=0.2),
-        A.IAAPerspective(p=0.5),
-
-        A.OneOf(
-            [
-                A.CLAHE(p=1),
-                A.RandomBrightness(p=1),
-                A.RandomGamma(p=1),
-            ],
-            p=0.9,
-        ),
-
-        A.OneOf(
-            [
-                A.IAASharpen(p=1),
-                A.Blur(blur_limit=3, p=1),
-                A.MotionBlur(blur_limit=3, p=1),
-            ],
-            p=0.9,
-        ),
-
-        A.OneOf(
-            [
-                A.RandomContrast(p=1),
-                A.HueSaturationValue(p=1),
-            ],
-            p=0.9,
-        ),
-        A.Lambda(mask=round_clip_0_1)
     ]
     return A.Compose(train_transform)
 
@@ -281,40 +248,31 @@ test_dataset = Dataset(
 )
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-
-# scores = model.evaluate_generator(test_dataloader)
-# print("Loss: {:.5}".format(scores[0]))
-# for metric, value in zip(metrics, scores[1:]):
-#     print("mean {}: {:.5}".format(metric.__name__, value))
-
+## evaluate the performance
 # calculate the pixel-level classification performance
-pr_masks = model.predict(test_dataloader); 
-pr_maps = np.argmax(pr_masks,axis=-1)
-
+pr_masks = model.predict(test_dataloader)
 gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+gt_masks = np.stack(gt_masks)
+# save prediction examples
+plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
+from helper_function import plot_flu_prediction
+plot_flu_prediction(plot_fig_file, images, gt_maps, pr_masks, nb_images)
 
-## IoU and dice coefficient
-iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_masks, pr_masks)
-print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
-print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+# calculate PSNR
+f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
+f2_mPSNR, f2_psnr_scores = calculate_psnr(gt_masks[:,:,:,1], pr_masks[:,:,:,1])
+mPSNR, f_psnr_scores = calculate_psnr(gt_masks, pr_masks)
+print('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPSNR, f2_mPSNR, mPSNR))
 
-y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
-cf_mat = confusion_matrix(y_true, y_pred)
-cf_mat_reord = np.zeros(cf_mat.shape)
-cf_mat_reord[1:,1:]=cf_mat[:3,:3];cf_mat_reord[0,1:]=cf_mat[3,0:3]; cf_mat_reord[1:,0]=cf_mat[0:3,3]
-cf_mat_reord[0,0] = cf_mat[3,3]
-print('Confusion matrix:')
-print(cf_mat_reord)
-prec_scores = []; recall_scores = []; f1_scores = []; iou_scores=[]
-for i in range(cf_mat.shape[0]):
-    prec_scores.append(precision(i,cf_mat_reord))
-    recall_scores.append(recall(i,cf_mat_reord))
-    f1_scores.append(f1_score(i,cf_mat_reord))
-print('Precision:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
-print('Recall:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
-# f1 score
-print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
+# calculate Pearson correlation coefficient
+f1_mPear, f1_pear_scores = calculate_pearsonr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
+f2_mPear, f2_pear_scores = calculate_pearsonr(gt_masks[:,:,:,1], pr_masks[:,:,:,1])
+f_mPear, f_pear_scores = calculate_pearsonr(gt_masks, pr_masks)
+print('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPear, f2_mPear, f_mPear))
+
+with open(model_folder+'/metric_summary.txt','w+') as f:
+	# save PSNR over fluorescent 1 and fluorescent 2
+	f.write('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPSNR, f2_mPSNR, mPSNR))
+	f.write('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPear, f2_mPear, f_mPear))
