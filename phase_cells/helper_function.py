@@ -54,7 +54,43 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images):
 		if i == 0:
 			ax[i,0].set_title('Image',fontsize=font_size); ax[i,1].set_title('GT',fontsize=font_size); 
 			ax[i,2].set_title('Pred',fontsize=font_size); ax[i,3].set_title('Err Map',fontsize=font_size); 
-	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=60)
+
+def plot_map_prediction(file_name, images, gt_maps, pr_maps, nb_images):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	from random import sample
+	font_size = 24
+	indices = sample(range(gt_maps.shape[0]),nb_images)
+	rows, cols, size = nb_images,3,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	for i in range(len(indices)):
+		idx = indices[i]
+		image, gt_map, pr_map = images[idx,:].squeeze(), gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
+		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
+		ax[i,0].imshow(image[::4,::4,:]); ax[i,1].imshow(gt_map[::4,::4,:]); ax[i,2].imshow(pr_map[::4,::4,:])
+		if i == 0:
+			ax[i,0].set_title('Image',fontsize=font_size); ax[i,1].set_title('GT',fontsize=font_size); 
+			ax[i,2].set_title('Pred',fontsize=font_size)
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
+def plot_flu_hist(file_name, gt_maps, pr_maps, nb_images):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	from random import sample
+	font_size = 24
+	indices = sample(range(gt_maps.shape[0]),nb_images)
+	rows, cols, size = nb_images,2,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	for i in range(len(indices)):
+		idx = indices[i]
+		gt_map, pr_map = gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
+		ax[i,0].hist(gt_map.flatten(), bins = 200);ax[i,1].hist(pr_map.flatten(), bins = 200);
+		if i == 0:
+			ax[i,0].set_title('GT',fontsize=font_size); ax[i,1].set_title('Pred',fontsize=font_size); 
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
 
 # calculate the IoU and dice scores
 def iou_calculate(y_true, y_pred):
@@ -107,6 +143,7 @@ def calculate_psnr(imgs1, imgs2):
 		axis_tuple = (1,2,3)
 	else:
 		axis_tuple = (1,2)
+	print('value in map: max {}, min {}'.format(imgs1.max(),imgs1.min()))
 	mse = np.mean((imgs1-imgs2)**2, axis = axis_tuple)
 	psnr_scores = 20*np.log10(1.0/np.sqrt(mse))
 	return np.mean(psnr_scores), psnr_scores

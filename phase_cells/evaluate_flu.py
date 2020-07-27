@@ -10,6 +10,7 @@ from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
 
 from helper_function import plot_history_flu
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
+from helper_function import plot_flu_prediction
 
 sm.set_framework('tf.keras')
 import glob
@@ -21,7 +22,8 @@ model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
-model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
+# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-False-loss-mse'
+model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -57,7 +59,7 @@ for img_fn in image_fns:
 	image = io.imread(image_dir+'/{}'.format(img_fn)); images.append(image)
 	gt_map =  io.imread(map_dir+'/{}'.format(img_fn)); gt_maps.append(gt_map)
 images = np.stack(images); gt_maps = np.stack(gt_maps) # an array of image and ground truth label maps
-gt_maps = gt_maps[:,:,:,:-1]
+gt_maps = gt_maps[:,:,:,:-1]/255.
 
 # classes for data loading and preprocessing
 class Dataset:
@@ -258,9 +260,25 @@ gt_masks = np.stack(gt_masks)
 # verify the loaded data
 print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
 
+# save histogram of pixels for fluorescent images
+# file_name = model_folder+'/hist_examples.png'; nb_images = 10
+# plot_flu_hist(file_name, gt_maps, pr_masks, nb_images)
+# thr = 0.05; nb_images = 3
+# gt_MASKs = gt_masks>0; pr_MASKs = pr_masks >thr;
+# def convert2map(masks):
+# 	import numpy as np
+# # 	maps = np.zeros(masks.shape[:-1])
+# 	G2_map = np.logical_and(masks[:,:,:,0],masks[:,:,:,1])
+# 	G1_map = np.logical_and(masks[:,:,:,0],np.logical_not(G2_map))
+# 	S_map = np.logical_and(masks[:,:,:,1],np.logical_not(G2_map))
+# 	maps = G2_map*3 + G1_map*1 + S_map*2
+# 	map_rgb = np.stack([G1_map*255, S_map*255, G2_map*255],axis =-1).astype(np.uint8)
+# 	return maps, map_rgb
+# gt_MAPs, gt_MAPs_rgb = convert2map(gt_MASKs); pr_MAPs, pr_MAPs_rgb = convert2map(pr_MASKs)
+# plot_map_prediction(model_folder+'/pred_maps.png', images, gt_MAPs_rgb, pr_MAPs_rgb, nb_images)
+
 # save prediction examples
 plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
-from helper_function import plot_flu_prediction
 plot_flu_prediction(plot_fig_file, images, gt_maps, pr_masks, nb_images)
 
 # calculate PSNR

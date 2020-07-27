@@ -34,6 +34,7 @@ parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--train", type=int, default = None)
+parser.add_argument("--act_fun", type=str, default = 'sigmoid')
 parser.add_argument("--loss", type=str, default = 'mse')
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--lr", type=float, default = 1e-3)
@@ -41,14 +42,14 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[-1], args.filtered, args.loss)
+model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[-1], args.filtered, args.loss, args.act_fun)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
-train_dim = 800; val_dim = 1984
+train_dim = args.dim; val_dim = 1984
 
 fluor_header = 'f' if not args.filtered else 'ff'
 
@@ -254,7 +255,7 @@ preprocess_input = sm.get_preprocessing(BACKBONE)
 # define network parameters
 # n_classes = 1 if len(CLASSES) == 1 else (len(CLASSES) + 1)  # case for binary and multiclass segmentation
 n_classes = 2
-activation = 'sigmoid' if n_classes == 2 else 'softmax'
+activation = '{}'.format(args.act_fun) if n_classes == 2 else 'softmax'
 
 #create model
 net_func = globals()[args.net_type]
@@ -343,12 +344,13 @@ for metric, value in zip(metrics, scores[1:]):
 
 # calculate the pixel-level classification performance
 pr_masks = model.predict(test_dataloader)
-gt_masks = []
+gt_masks = []; images = []
 for i in range(len(test_dataset)):
-    _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-gt_masks = np.stack(gt_masks)
+    image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
+images = np.stack(images); gt_masks = np.stack(gt_masks)
 # save prediction examples
-
+plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
+plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
