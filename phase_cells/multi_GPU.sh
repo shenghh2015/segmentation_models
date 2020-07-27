@@ -234,7 +234,7 @@
 # JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun relu --channels fl2
 # JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 3 --loss mse --act_fun relu --channels combined
 
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun relu  --channels combined
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 800 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun relu --channels combined
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun relu --channels combined
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 14 --dim 800 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun relu --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun relu  --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 4 --dim 800 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun relu --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun relu --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train False --batch_size 4 --dim 800 --epoch 100 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun relu --channels combined
