@@ -12,7 +12,7 @@ import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
 sm.set_framework('tf.keras')
 
-from helper_function import plot_history_flu
+from helper_function import plot_history_flu, plot_flu_prediction
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from sklearn.metrics import confusion_matrix
 
@@ -30,6 +30,7 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--dataset", type=str, default = 'cell_cycle_1984')
 parser.add_argument("--filtered", type=str2bool, default = False)  # Filtered fluorescent or not 
+parser.add_argument("--channels", type=str, default = 'fl1')
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
@@ -42,8 +43,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[-1], args.filtered, args.loss, args.act_fun)
+model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[-1], args.filtered, args.loss, args.act_fun, args.channels)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -82,7 +83,8 @@ class Dataset:
     def __init__(
             self, 
             images_dir, 
-            masks_dir, 
+            masks_dir,
+            channels=None,
             classes=None,
             nb_data=None,
             augmentation=None, 
@@ -99,7 +101,7 @@ class Dataset:
         print(len(self.images_fps)); print(len(self.masks_fps))        
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
-        
+        self.channels = channels
         self.augmentation = augmentation
         self.preprocessing = preprocessing
     
@@ -123,7 +125,13 @@ class Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
 
-        return image, mask[:,:,:-1]
+            if self.channels == 'fl1':
+                output_mask = mask[:,:,:1]
+            elif self.channels == 'fl2':
+                output_mask = mask[:,:,1:-1]
+            else:
+                output_mask = mask[:,:,:-1]
+        return image, output_mask
         
     def __len__(self):
         return len(self.ids)
@@ -254,8 +262,8 @@ preprocess_input = sm.get_preprocessing(BACKBONE)
 
 # define network parameters
 # n_classes = 1 if len(CLASSES) == 1 else (len(CLASSES) + 1)  # case for binary and multiclass segmentation
-n_classes = 2
-activation = '{}'.format(args.act_fun) if n_classes == 2 else 'softmax'
+n_classes = 2 if args.channels =='combined' else 1
+activation = '{}'.format(args.act_fun)
 
 #create model
 net_func = globals()[args.net_type]
@@ -278,7 +286,8 @@ model.compile(optim, loss, metrics)
 # Dataset for train images
 train_dataset = Dataset(
     x_train_dir, 
-    y_train_dir, 
+    y_train_dir,
+    channels = args.channels, 
     classes=[],
     nb_data=args.train, 
     augmentation=get_training_augmentation(train_dim, args.rot),
@@ -288,7 +297,8 @@ train_dataset = Dataset(
 # Dataset for validation images
 valid_dataset = Dataset(
     x_valid_dir, 
-    y_valid_dir, 
+    y_valid_dir,
+    channels = args.channels,  
     classes=[], 
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
@@ -329,6 +339,7 @@ plot_history_flu(model_folder+'/train_history.png',history)
 test_dataset = Dataset(
     x_test_dir, 
     y_test_dir, 
+    channels = args.channels, 
     classes=[], 
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
@@ -348,6 +359,11 @@ gt_masks = []; images = []
 for i in range(len(test_dataset)):
     image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
 images = np.stack(images); gt_masks = np.stack(gt_masks)
+
+# create fake 2 channels if there is only one channel
+if not args.channels == 'combined':
+	gt_masks = np.concatenate([gt_masks, gt_masks], axis = -1)
+	pr_masks = np.concatenate([pr_masks, pr_masks], axis = -1)
 # save prediction examples
 plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
 plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
