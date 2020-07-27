@@ -219,7 +219,12 @@
 # JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun linear
 # JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb5 --pre_train True --batch_size 1 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun linear
 
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 0 --loss mse --act_fun linear
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 1 --loss mse --act_fun relu
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 2 --loss mse --act_fun linear
-JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb5 --pre_train True --batch_size 1 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 3 --loss mse --act_fun linear
+# JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 0 --loss mse --act_fun linear
+# JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 1 --loss mse --act_fun relu
+# JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 2 --loss mse --act_fun linear
+# JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb5 --pre_train True --batch_size 1 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 3 --loss mse --act_fun linear
+
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun relu  --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 1 --loss mse --act_fun relu --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun relu --channels combined
+JOB: python life_cycle_flu.py --net_type Unet --backbone efficientnetb4 --pre_train True --batch_size 2 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered False --gpu 3 --loss mse --act_fun relu --channels combined

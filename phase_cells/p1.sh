@@ -6,4 +6,4 @@
 #python live_dead.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 2 --epoch 300 --lr 5e-4 --dataset live_dead_1664 --train 900 --dim 800 --rot 0 --gpu 1
 #python cell_cycle.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 320 --down_factor 2 --epoch 2 --dataset cell_cycle2 --lr 5e-4 --train 1100 --rot 0 --gpu 1
 
-python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 1 --dim 1024 --epoch 1 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun relu --channels combined
+python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 1 --dim 1024 --epoch 40 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun relu --channels combined
