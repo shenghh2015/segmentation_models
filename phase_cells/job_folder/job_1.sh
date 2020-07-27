@@ -1,2 +1,2 @@
-python life_cycle_flu.py --net_type Unet --backbone efficientnetb1 --pre_train True --batch_size 6 --dim 800 --epoch 200 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse
+python life_cycle_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 3 --dim 1024 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun relu
 
