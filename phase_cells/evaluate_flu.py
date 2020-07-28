@@ -297,3 +297,6 @@ with open(model_folder+'/metric_summary.txt','w+') as f:
 	# save PSNR over fluorescent 1 and fluorescent 2
 	f.write('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPSNR, f2_mPSNR, mPSNR))
 	f.write('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPear, f2_mPear, f_mPear))
+
+# save hisogram of psnr and coefficient
+plot_psnr_histogram(file_name, psnr_list1, psnr_list2, rho_list1, rho_list2)

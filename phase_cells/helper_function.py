@@ -37,9 +37,11 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
 	from matplotlib.figure import Figure
-	from random import sample
+	import random
+	seed = 3
+	random.seed(seed)
 	font_size = 24
-	indices = sample(range(gt_maps.shape[0]),nb_images)
+	indices = random.sample(range(gt_maps.shape[0]),nb_images)
 	rows, cols, size = nb_images,4,5
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	for i in range(len(indices)):
@@ -51,6 +53,8 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images):
 		pr_map_rgb = np.zeros(image.shape,dtype=np.uint8); pr_map_rgb[:,:,:-1]=np.uint8((pr_map-pr_map.min())/(pr_map.max()-pr_map.min())*255)
 		ax[i,0].imshow(image[::4,::4,:]); ax[i,1].imshow(gt_map_rgb[::4,::4,:]); 
 		ax[i,2].imshow(pr_map_rgb[::4,::4,:]); ax[i,3].imshow(err_map[::4,::4], cmap='Blues')
+		ax[i,0].set_xticks([]);ax[i,1].set_xticks([]);ax[i,2].set_xticks([]);ax[i,3].set_xticks([])
+		ax[i,0].set_yticks([]);ax[i,1].set_yticks([]);ax[i,2].set_yticks([]);ax[i,3].set_yticks([])
 		if i == 0:
 			ax[i,0].set_title('Image',fontsize=font_size); ax[i,1].set_title('GT',fontsize=font_size); 
 			ax[i,2].set_title('Pred',fontsize=font_size); ax[i,3].set_title('Err Map',fontsize=font_size); 
@@ -147,6 +151,47 @@ def calculate_psnr(imgs1, imgs2):
 	mse = np.mean((imgs1-imgs2)**2, axis = axis_tuple)
 	psnr_scores = 20*np.log10(1.0/np.sqrt(mse))
 	return np.mean(psnr_scores), psnr_scores
+
+def plot_psnr_histogram(file_name, psnr_list1, psnr_list2, rho_list1, rho_list2):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	kwargs = dict(alpha=0.7, bins=12, density= False, stacked=True)
+	rows, cols, size = 1,2,6; font_size = 20
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	ax[0].hist(psnr_list1, **kwargs, color='r', label='fl1') # PSNR for channel 1
+	ax[0].hist(psnr_list2, **kwargs, color='g', label='fl2') # PSNR for channel 2
+	ax[0].legend(['fl1_average: {:.2f}'.format(np.mean(psnr_list1)), 'fl2_average: {:.2f}'.format(np.mean(psnr_list2))],fontsize=font_size-2)
+	ax[0].set_title('PSNR distribution', fontsize =font_size)
+	ax[0].set_ylabel('Count', fontsize =font_size);ax[0].set_xlabel('PSNR', fontsize =font_size);
+	ax[0].set_xlim([np.min(np.concatenate([psnr_list1,psnr_list2]))-5, np.max(np.concatenate([psnr_list1,psnr_list2]))])	
+# 	ax[0].set_xlim([np.min(np.concatenate([psnr_list1,psnr_list2])), np.max(np.concatenate([psnr_list1,psnr_list2]))])
+	ax[0].tick_params(axis='x', labelsize=font_size-2); ax[0].tick_params(axis='y', labelsize=font_size-2)
+# 	kwargs = dict(alpha=0.9, bins=10, density= False, stacked=True)
+	ax[1].hist(rho_list1, **kwargs, color='r', label='fl1') # PSNR for channel 1
+	ax[1].hist(rho_list2, **kwargs, color='g', label='fl2') # PSNR for channel 2
+	ax[1].set_title(r'$\rho$ distribution', fontsize =font_size)
+	ax[1].set_ylabel('Count', fontsize =font_size);ax[1].set_xlabel(r'$\rho$', fontsize =font_size);
+	ax[1].tick_params(axis='x', labelsize=font_size-2); ax[1].tick_params(axis='y', labelsize=font_size-2)
+	ax[1].set_xlim([0,1.0])
+	ax[1].legend(['fl1_average: {:.4f}'.format(np.mean(rho_list1)), 'fl2_average: {:.4f}'.format(np.mean(rho_list2))],fontsize=font_size-2)
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+	
+# 	kwargs = dict(alpha=0.6, bins=100, density= False, stacked=True)
+# 	fig_size = (8,6)
+# 	fig = Figure(figsize=fig_size)
+# 	file_name = file_name
+# 	ax = fig.add_subplot(111)
+# 	ax.hist(x, **kwargs, color='g', label='Norm')
+# 	ax.hist(y, **kwargs, color='r', label='Anomaly')
+# 	title = os.path.basename(os.path.dirname(file_name))
+# 	ax.set_title(title)
+# 	ax.set_xlabel('Mean of normalized pixel values')
+# 	ax.set_ylabel('Frequency')
+# 	ax.legend(['Norm', 'Anomaly'])
+# 	ax.set_xlim([np.min(np.concatenate([x,y])), np.max(np.concatenate([x,y]))])
+# 	canvas = FigureCanvasAgg(fig)
+# 	canvas.print_figure(file_name, dpi=100)
 
 SMOOTH= 1e-6; seed = 0
 def calculate_pearsonr(imgs1, imgs2):
