@@ -278,8 +278,8 @@ print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
 # plot_map_prediction(model_folder+'/pred_maps.png', images, gt_MAPs_rgb, pr_MAPs_rgb, nb_images)
 
 # save prediction examples
-plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
-plot_flu_prediction(plot_fig_file, images, gt_maps, pr_masks, nb_images)
+plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 4
+plot_flu_prediction(plot_fig_file, images, gt_maps, pr_masks, nb_images, rand_seed = 6)
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
@@ -299,4 +299,5 @@ with open(model_folder+'/metric_summary.txt','w+') as f:
 	f.write('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPear, f2_mPear, f_mPear))
 
 # save hisogram of psnr and coefficient
-plot_psnr_histogram(file_name, psnr_list1, psnr_list2, rho_list1, rho_list2)
+file_name = model_folder+'/hist_psnr_rho.png'
+plot_psnr_histogram(file_name, f1_psnr_scores, f2_psnr_scores, f1_pear_scores, f2_pear_scores)

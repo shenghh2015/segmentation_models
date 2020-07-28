@@ -33,12 +33,12 @@ def plot_history_flu(file_name, history):
 	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
 
-def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images):
+def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_seed = 3):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
 	from matplotlib.figure import Figure
 	import random
-	seed = 3
+	seed = rand_seed #3
 	random.seed(seed)
 	font_size = 24
 	indices = random.sample(range(gt_maps.shape[0]),nb_images)
@@ -176,22 +176,6 @@ def plot_psnr_histogram(file_name, psnr_list1, psnr_list2, rho_list1, rho_list2)
 	ax[1].set_xlim([0,1.0])
 	ax[1].legend(['fl1_average: {:.4f}'.format(np.mean(rho_list1)), 'fl2_average: {:.4f}'.format(np.mean(rho_list2))],fontsize=font_size-2)
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
-	
-# 	kwargs = dict(alpha=0.6, bins=100, density= False, stacked=True)
-# 	fig_size = (8,6)
-# 	fig = Figure(figsize=fig_size)
-# 	file_name = file_name
-# 	ax = fig.add_subplot(111)
-# 	ax.hist(x, **kwargs, color='g', label='Norm')
-# 	ax.hist(y, **kwargs, color='r', label='Anomaly')
-# 	title = os.path.basename(os.path.dirname(file_name))
-# 	ax.set_title(title)
-# 	ax.set_xlabel('Mean of normalized pixel values')
-# 	ax.set_ylabel('Frequency')
-# 	ax.legend(['Norm', 'Anomaly'])
-# 	ax.set_xlim([np.min(np.concatenate([x,y])), np.max(np.concatenate([x,y]))])
-# 	canvas = FigureCanvasAgg(fig)
-# 	canvas.print_figure(file_name, dpi=100)
 
 SMOOTH= 1e-6; seed = 0
 def calculate_pearsonr(imgs1, imgs2):
