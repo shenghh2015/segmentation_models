@@ -17,13 +17,13 @@ import glob
 from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-# model_root_folder = '/data/models/report_results/'
-model_root_folder = '/data/models/report_results_phase_flu/'
+model_root_folder = '/data/models/'
+#model_root_folder = '/data/models/report_results_phase_flu/'
 
 model_fl1 = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984-fted-True-loss-mse-act-relu-ch-fl1'
-model_fl2 = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984-fted-True-loss-mse-act-relu-ch-fl2'
+model_fl2 = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-fl2-flu_scale-255.0'
 model_list = [model_fl1, model_fl2]
-model_name = model_list[0]
+model_name = model_list[1]
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -31,6 +31,7 @@ splits = model_name.split('-')
 dataset = 'cell_cycle_1984'
 val_dim = 1984
 
+flu_scale = 1.0
 for v in range(len(splits)):
 	if splits[v] == 'net':
 		net_arch = splits[v+1]
@@ -40,7 +41,11 @@ for v in range(len(splits)):
 		flu_header = 'ff' if splits[v+1].lower() == 'true' else 'f'
 	elif splits[v] == 'ch':
 		flu_ch = splits[v+1]
-
+	elif splits[v] == 'flu_scale':
+		flu_scale = float(splits[v+1])
+	elif splits[v] == 'act':
+		act_fun = splits[v+1]
+		
 DATA_DIR = '/data/datasets/{}'.format(dataset) 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(flu_header))
@@ -99,7 +104,7 @@ class Dataset:
         print(len(self.images_fps)); print(len(self.masks_fps))        
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
-        
+        self.channels = chennels
         self.augmentation = augmentation
         self.preprocessing = preprocessing
     
@@ -123,7 +128,13 @@ class Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
 
-        return image, mask[:,:,:-1]
+        if self.channels == 'fl1':
+            output_mask = mask[:,:,:1]
+        elif self.channels == 'fl2':
+            output_mask = mask[:,:,1:-1]
+        else:
+            output_mask = mask[:,:,:-1]
+        return image, output_mask
         
     def __len__(self):
         return len(self.ids)
@@ -213,8 +224,8 @@ preprocess_input = sm.get_preprocessing(backbone)
 
 #create model
 # CLASSES = ['live', 'inter', 'dead']
-n_classes = 2
-activation = 'sigmoid'
+n_classes = 2 if flu_ch == 'combined' else 1
+activation = act_fun
 net_func = globals()[net_arch]
 model = net_func(backbone, classes=n_classes, activation=activation)
 
@@ -247,6 +258,7 @@ elif subset == 'train':
 test_dataset = Dataset(
     x_test_dir, 
     y_test_dir, 
+    channels = flu_ch,
     classes=CLASSES, 
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
@@ -256,6 +268,8 @@ test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 ## evaluate the performance
 # calculate the pixel-level classification performance
 pr_masks = model.predict(test_dataloader)
+# back to scale [0,1]
+pr_masks = pr_masks/flu_scale
 gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)

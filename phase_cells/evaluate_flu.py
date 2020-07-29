@@ -23,7 +23,8 @@ model_root_folder = '/data/models/'
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-False-loss-mse'
-model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
+# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
+model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-fl2-flu_scale-255.0'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -31,6 +32,7 @@ splits = model_name.split('-')
 dataset = 'cell_cycle_1984_v2'
 val_dim = 1984
 
+flu_scale = 1.0
 for v in range(len(splits)):
 	if splits[v] == 'net':
 		net_arch = splits[v+1]
@@ -38,6 +40,8 @@ for v in range(len(splits)):
 		backbone = splits[v+1]
 	elif splits[v] == 'fted':
 		flu_header = 'ff' if splits[v+1].lower() == 'true' else 'f'
+	elif splits[v] == 'flu_scale':
+		flu_scale = float(splits[v+1])
 
 DATA_DIR = '/data/datasets/{}'.format(dataset) 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
@@ -253,10 +257,13 @@ test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 ## evaluate the performance
 # calculate the pixel-level classification performance
 pr_masks = model.predict(test_dataloader)
+# scale back to [0,1]
+pr_masks = pr_masks/flu_scale
 gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks)
+
 # verify the loaded data
 print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
 

@@ -34,6 +34,7 @@ parser.add_argument("--channels", type=str, default = 'fl1')
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
+parser.add_argument("--flu_scale", type=float, default = 1.0)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--act_fun", type=str, default = 'sigmoid')
 parser.add_argument("--loss", type=str, default = 'mse')
@@ -43,8 +44,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels)
+model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.flu_scale)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -84,6 +85,7 @@ class Dataset:
             self, 
             images_dir, 
             masks_dir,
+            flu_scale = 1.0,
             channels=None,
             classes=None,
             nb_data=None,
@@ -102,6 +104,7 @@ class Dataset:
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
         self.channels = channels
+        self.flu_scale = flu_scale
         self.augmentation = augmentation
         self.preprocessing = preprocessing
     
@@ -113,7 +116,7 @@ class Dataset:
 #         mask = cv2.imread(self.masks_fps[i], cv2.COLOR_BGR2RGB)
         image = io.imread(self.images_fps[i])
         mask = io.imread(self.masks_fps[i])
-        mask = mask/255.
+        mask = mask/255.*self.flu_scale
         
 	    # apply augmentations
         if self.augmentation:
@@ -125,12 +128,12 @@ class Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
 
-            if self.channels == 'fl1':
-                output_mask = mask[:,:,:1]
-            elif self.channels == 'fl2':
-                output_mask = mask[:,:,1:-1]
-            else:
-                output_mask = mask[:,:,:-1]
+        if self.channels == 'fl1':
+            output_mask = mask[:,:,:1]
+        elif self.channels == 'fl2':
+            output_mask = mask[:,:,1:-1]
+        else:
+            output_mask = mask[:,:,:-1]
         return image, output_mask
         
     def __len__(self):
@@ -278,7 +281,7 @@ optim = tf.keras.optimizers.Adam(LR)
 loss = tf.keras.losses.MSE
 
 # metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
-metrics = [sm.metrics.PSNR(max_val=1.0)]
+metrics = [sm.metrics.PSNR(max_val=args.flu_scale)]
 
 # compile keras model with defined optimozer, loss and metrics
 model.compile(optim, loss, metrics)
@@ -287,6 +290,7 @@ model.compile(optim, loss, metrics)
 train_dataset = Dataset(
     x_train_dir, 
     y_train_dir,
+    flu_scale = args.flu_scale,
     channels = args.channels, 
     classes=[],
     nb_data=args.train, 
@@ -298,6 +302,7 @@ train_dataset = Dataset(
 valid_dataset = Dataset(
     x_valid_dir, 
     y_valid_dir,
+    flu_scale = args.flu_scale,
     channels = args.channels,  
     classes=[], 
     augmentation=get_validation_augmentation(val_dim),
@@ -338,7 +343,8 @@ plot_history_flu(model_folder+'/train_history.png',history)
 # evaluate model
 test_dataset = Dataset(
     x_test_dir, 
-    y_test_dir, 
+    y_test_dir,
+    flu_scale = args.flu_scale,
     channels = args.channels, 
     classes=[], 
     augmentation=get_validation_augmentation(val_dim),
@@ -359,6 +365,10 @@ gt_masks = []; images = []
 for i in range(len(test_dataset)):
     image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
 images = np.stack(images); gt_masks = np.stack(gt_masks)
+
+# scale back from args.flu_scale
+gt_masks = gt_masks/args.flu_scale
+pr_masks = pr_masks/args.flu_scale
 
 # create fake 2 channels if there is only one channel
 if not args.channels == 'combined':
