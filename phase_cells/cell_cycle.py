@@ -41,7 +41,7 @@ args = parser.parse_args()
 print(args)
 
 model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}-fact-{}loss-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, args.dataset.split('_')[-1], args.down_factor, args.loss)
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, '_'.join(args.dataset.split('_')[2:]), args.down_factor, args.loss)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -58,7 +58,8 @@ if args.down_factor <2:
 		else:
 			val_dim = 1984
 	else:
-		train_dim = 800; val_dim = 1984
+		train_dim = args.dim; val_dim = 1984
+		print('train dim:{}'.format(train_dim))
 else:
 	DATA_DIR = '/data/datasets/{}/down_x{}'.format(args.dataset, args.down_factor)
 	val_dim = 512; train_dim = args.dim

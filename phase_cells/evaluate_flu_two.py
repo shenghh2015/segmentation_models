@@ -10,25 +10,25 @@ from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
 
 from helper_function import plot_history_flu
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
-from helper_function import plot_flu_prediction, plot_psnr_histogram
+from helper_function import plot_flu_prediction
 
 sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 # model_root_folder = '/data/models/report_results/'
-model_root_folder = '/data/models/'
+model_root_folder = '/data/models/report_results_phase_flu/'
 
-#model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
-# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
-# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-False-loss-mse'
-model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
+model_fl1 = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984-fted-True-loss-mse-act-relu-ch-fl1'
+model_fl2 = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984-fted-True-loss-mse-act-relu-ch-fl2'
+model_list = [model_fl1, model_fl2]
+model_name = model_list[0]
 model_folder = model_root_folder+model_name
 
 ## parse model name
 splits = model_name.split('-')
-dataset = 'cell_cycle_1984_v2'
+dataset = 'cell_cycle_1984'
 val_dim = 1984
 
 for v in range(len(splits)):
@@ -38,6 +38,8 @@ for v in range(len(splits)):
 		backbone = splits[v+1]
 	elif splits[v] == 'fted':
 		flu_header = 'ff' if splits[v+1].lower() == 'true' else 'f'
+	elif splits[v] == 'ch':
+		flu_ch = splits[v+1]
 
 DATA_DIR = '/data/datasets/{}'.format(dataset) 
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
@@ -80,6 +82,7 @@ class Dataset:
             self, 
             images_dir, 
             masks_dir, 
+            channels = 'fl1',
             classes=None,
             nb_data=None,
             augmentation=None, 
@@ -260,26 +263,9 @@ gt_masks = np.stack(gt_masks)
 # verify the loaded data
 print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
 
-# save histogram of pixels for fluorescent images
-# file_name = model_folder+'/hist_examples.png'; nb_images = 10
-# plot_flu_hist(file_name, gt_maps, pr_masks, nb_images)
-# thr = 0.05; nb_images = 3
-# gt_MASKs = gt_masks>0; pr_MASKs = pr_masks >thr;
-# def convert2map(masks):
-# 	import numpy as np
-# # 	maps = np.zeros(masks.shape[:-1])
-# 	G2_map = np.logical_and(masks[:,:,:,0],masks[:,:,:,1])
-# 	G1_map = np.logical_and(masks[:,:,:,0],np.logical_not(G2_map))
-# 	S_map = np.logical_and(masks[:,:,:,1],np.logical_not(G2_map))
-# 	maps = G2_map*3 + G1_map*1 + S_map*2
-# 	map_rgb = np.stack([G1_map*255, S_map*255, G2_map*255],axis =-1).astype(np.uint8)
-# 	return maps, map_rgb
-# gt_MAPs, gt_MAPs_rgb = convert2map(gt_MASKs); pr_MAPs, pr_MAPs_rgb = convert2map(pr_MASKs)
-# plot_map_prediction(model_folder+'/pred_maps.png', images, gt_MAPs_rgb, pr_MAPs_rgb, nb_images)
-
 # save prediction examples
 plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 4
-plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images, rand_seed = 6)
+plot_flu_prediction(plot_fig_file, images, gt_maps, pr_masks, nb_images, rand_seed = 6)
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
@@ -300,45 +286,4 @@ with open(model_folder+'/metric_summary.txt','w+') as f:
 
 # save hisogram of psnr and coefficient
 file_name = model_folder+'/hist_psnr_rho.png'
-plot_psnr_histogram(file_name, f1_psnr_scores, f2_psnr_scores, f1_pear_scores, f2_pear_scores)
-
-# Remove outliers
-print('Outlier analysis ...')
-nb_outliers = 6
-fl1_pear_th = np.percentile(f1_pear_scores,nb_outliers)
-fl2_pear_th = np.percentile(f2_pear_scores,nb_outliers)
-fl1_indices = np.where(np.array(f1_pear_scores)<=fl1_pear_th)[0]
-fl2_indices = np.where(np.array(f2_pear_scores)<=fl2_pear_th)[0]
-print(fl1_indices); print(np.array(f1_pear_scores)[fl1_indices])
-print(fl2_indices); print(np.array(f2_pear_scores)[fl2_indices])
-outliers = list(set(fl1_indices.tolist()+fl2_indices.tolist()))
-image_liers = images[outliers,:]
-gt_map_liers = gt_masks[outliers,:]
-pr_map_liers = pr_masks[outliers,:]
-
-# save prediction examples
-plot_fig_file = model_folder+'/pred_outliers.png'; nb_images = len(outliers)
-plot_flu_prediction(plot_fig_file, image_liers, gt_map_liers, pr_map_liers, nb_images, rand_seed = 6)
-
-## remove the outliers
-keep_ind = [v for v in range(len(f1_pear_scores)) if v not in outliers] 
-# calculate PSNR
-f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[keep_ind,:,:,0], pr_masks[keep_ind,:,:,0])
-f2_mPSNR, f2_psnr_scores = calculate_psnr(gt_masks[keep_ind,:,:,1], pr_masks[keep_ind,:,:,1])
-mPSNR, f_psnr_scores = calculate_psnr(gt_masks[keep_ind,:], pr_masks[keep_ind,:])
-print('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPSNR, f2_mPSNR, mPSNR))
-
-# calculate Pearson correlation coefficient
-f1_mPear, f1_pear_scores = calculate_pearsonr(gt_masks[keep_ind,:,:,0], pr_masks[keep_ind,:,:,0])
-f2_mPear, f2_pear_scores = calculate_pearsonr(gt_masks[keep_ind,:,:,1], pr_masks[keep_ind,:,:,1])
-f_mPear, f_pear_scores = calculate_pearsonr(gt_masks[keep_ind,:], pr_masks[keep_ind,:])
-print('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPear, f2_mPear, f_mPear))
-
-with open(model_folder+'/metric_wo_outliers.txt','w+') as f:
-	# save PSNR over fluorescent 1 and fluorescent 2
-	f.write('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPSNR, f2_mPSNR, mPSNR))
-	f.write('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPear, f2_mPear, f_mPear))
-
-# save hisogram of psnr and coefficient
-file_name = model_folder+'/hist_psnr_rho_wo_outliers.png'
 plot_psnr_histogram(file_name, f1_psnr_scores, f2_psnr_scores, f1_pear_scores, f2_pear_scores)

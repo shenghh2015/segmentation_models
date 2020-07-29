@@ -44,7 +44,7 @@ args = parser.parse_args()
 print(args)
 
 model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[-1], args.filtered, args.loss, args.act_fun, args.channels)
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, args.dataset.split('_')[2:], args.filtered, args.loss, args.act_fun, args.channels)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu

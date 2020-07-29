@@ -49,8 +49,10 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_see
 		image, gt_map, pr_map = images[idx,:].squeeze(), gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
 		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
 		err_map = np.sum(np.abs(gt_map-pr_map),axis=-1)
-		gt_map_rgb = np.zeros(image.shape,dtype=np.uint8); gt_map_rgb[:,:,:-1]=np.uint8((gt_map-gt_map.min())/(gt_map.max()-gt_map.min())*255)
-		pr_map_rgb = np.zeros(image.shape,dtype=np.uint8); pr_map_rgb[:,:,:-1]=np.uint8((pr_map-pr_map.min())/(pr_map.max()-pr_map.min())*255)
+		gt_map_rgb = np.zeros(image.shape,dtype=np.uint8); # gt_map_rgb[:,:,:-1]=np.uint8((gt_map-gt_map.min())/(gt_map.max()-gt_map.min())*255)
+		gt_map_rgb[:,:,:-1]=np.uint8(gt_map*255)
+		pr_map_rgb = np.zeros(image.shape,dtype=np.uint8); # pr_map_rgb[:,:,:-1]=np.uint8((pr_map-pr_map.min())/(pr_map.max()-pr_map.min())*255)
+		pr_map_rgb[:,:,:-1]=np.uint8(pr_map*255)
 		ax[i,0].imshow(image[::4,::4,:]); ax[i,1].imshow(gt_map_rgb[::4,::4,:]); 
 		ax[i,2].imshow(pr_map_rgb[::4,::4,:]); ax[i,3].imshow(err_map[::4,::4], cmap='Blues')
 		ax[i,0].set_xticks([]);ax[i,1].set_xticks([]);ax[i,2].set_xticks([]);ax[i,3].set_xticks([])
