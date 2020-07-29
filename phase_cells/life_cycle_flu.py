@@ -278,7 +278,11 @@ model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, a
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
-loss = tf.keras.losses.MSE
+
+if args.loss == 'mse':
+	loss = tf.keras.losses.MSE
+elif args.loss == 'mae':
+	loss = tf.keras.losses.MAE
 
 # metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
 metrics = [sm.metrics.PSNR(max_val=args.flu_scale)]
