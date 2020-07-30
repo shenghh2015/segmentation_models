@@ -31,6 +31,7 @@ parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--dataset", type=str, default = 'cell_cycle_1984')
 parser.add_argument("--filtered", type=str2bool, default = False)  # Filtered fluorescent or not 
 parser.add_argument("--channels", type=str, default = 'fl1')
+parser.add_argument("--ext", type=str2bool, default = False)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
@@ -44,8 +45,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.flu_scale)
+model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}-ext-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.flu_scale, args.ext)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -55,8 +56,8 @@ train_dim = args.dim; val_dim = 1984
 
 fluor_header = 'f' if not args.filtered else 'ff'
 
-x_train_dir = os.path.join(DATA_DIR, 'train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(fluor_header))
+x_train_dir = os.path.join(DATA_DIR, 'train_images') if not args.ext else os.path.join(DATA_DIR, 'ext_train_images')
+y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(fluor_header)) if not args.ext else os.path.join(DATA_DIR, 'ext_train_{}masks'.format(fluor_header))
 
 x_valid_dir = os.path.join(DATA_DIR, 'val_images')
 y_valid_dir = os.path.join(DATA_DIR, 'val_{}masks'.format(fluor_header))
@@ -64,7 +65,7 @@ y_valid_dir = os.path.join(DATA_DIR, 'val_{}masks'.format(fluor_header))
 x_test_dir = os.path.join(DATA_DIR, 'test_images')
 y_test_dir = os.path.join(DATA_DIR, 'test_{}masks'.format(fluor_header))
 
-print(y_test_dir)
+print(y_train_dir)
 
 # classes for data loading and preprocessing
 class Dataset:
