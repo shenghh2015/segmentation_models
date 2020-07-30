@@ -27,6 +27,7 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'resnet34')
 parser.add_argument("--dataset", type=str, default = 'cell_cycle2')
 parser.add_argument("--down", type=str2bool, default = True)
+parser.add_argument("--ext", type=str2bool, default = False)
 parser.add_argument("--down_factor", type=int, default = 1)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
@@ -40,8 +41,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}-fact-{}loss-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, '_'.join(args.dataset.split('_')[2:]), args.down_factor, args.loss)
+model_name = 'cellcycle-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-down-{}-dim-{}-train-{}-bk-{}-rot-{}-set-{}-ext-{}-fact-{}-loss-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.down, args.dim, args.train,args.bk_weight, args.rot, '_'.join(args.dataset.split('_')[2:]), args.ext, args.down_factor, args.loss)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -64,8 +65,8 @@ else:
 	DATA_DIR = '/data/datasets/{}/down_x{}'.format(args.dataset, args.down_factor)
 	val_dim = 512; train_dim = args.dim
 
-x_train_dir = os.path.join(DATA_DIR, 'train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_masks')
+x_train_dir = os.path.join(DATA_DIR, 'train_images') if not args.ext else os.path.join(DATA_DIR, 'ext_train_images')
+y_train_dir = os.path.join(DATA_DIR, 'train_masks') if not args.ext else os.path.join(DATA_DIR, 'ext_train_masks')
 
 x_valid_dir = os.path.join(DATA_DIR, 'val_images')
 y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
@@ -73,6 +74,7 @@ y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
 x_test_dir = os.path.join(DATA_DIR, 'test_images')
 y_test_dir = os.path.join(DATA_DIR, 'test_masks')
 
+print(x_train_dir)
 # classes for data loading and preprocessing
 class Dataset:
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.

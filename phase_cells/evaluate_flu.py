@@ -16,15 +16,15 @@ sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
-# model_root_folder = '/data/models/report_results/'
+os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+#model_root_folder = '/data/models/report_results/'
 model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-False-loss-mse'
-# model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
-model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-fl2-flu_scale-255.0'
+model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
+#model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-fl2-flu_scale-255.0'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -311,7 +311,7 @@ plot_psnr_histogram(file_name, f1_psnr_scores, f2_psnr_scores, f1_pear_scores, f
 
 # Remove outliers
 print('Outlier analysis ...')
-nb_outliers = 6
+nb_outliers = 5
 fl1_pear_th = np.percentile(f1_pear_scores,nb_outliers)
 fl2_pear_th = np.percentile(f2_pear_scores,nb_outliers)
 fl1_indices = np.where(np.array(f1_pear_scores)<=fl1_pear_th)[0]

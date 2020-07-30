@@ -14,12 +14,13 @@ sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-model_root_folder = '/data/models/report_results/'
-# model_root_folder = '/data/models/'
+os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+# model_root_folder = '/data/models/report_results/'
+model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
-model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
+# model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
+model_name = 'cellcycle-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-2-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-fact-1loss-focal+dice'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -39,6 +40,9 @@ for v in range(len(splits)):
 			dataset = 'live_dead_'+splits[v+1]
 			val_dim = 1664
 		if splits[v+1] == '1984':
+			dataset = 'cell_cycle_'+splits[v+1]
+			val_dim = 1984
+		if splits[v+1] == '1984_v2':
 			dataset = 'cell_cycle_'+splits[v+1]
 			val_dim = 1984
 	elif splits[v] == 'net':
