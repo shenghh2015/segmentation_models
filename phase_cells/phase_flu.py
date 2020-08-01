@@ -45,7 +45,7 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}-ext-{}'.format(args.net_type, args.backbone, args.pre_train,\
+model_name = 'phase_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}-ext-{}'.format(args.net_type, args.backbone, args.pre_train,\
 		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.flu_scale, args.ext)
 print(model_name)
 
