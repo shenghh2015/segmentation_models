@@ -24,7 +24,7 @@ def plot_deeply_history(file_name, history):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
 	from matplotlib.figure import Figure
-	rows, cols, size = 1,1,5
+	rows, cols, size = 1,3,5
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	ax[0].plot(history.history['softmax_loss']);ax[0].plot(history.history['val_softmax_loss'])
 	ax[0].set_ylabel('loss');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
