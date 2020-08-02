@@ -18,14 +18,15 @@ from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '2'
 #model_root_folder = '/data/models/report_results/'
-model_root_folder = '/data/models/'
+# model_root_folder = '/data/models/'
+model_root_folder = '/data/models/report_results_phase_flu/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-6-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 # model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-False-loss-mse'
 model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-1100-rot-0-set-1984-fted-True-loss-mse'
 #model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-60-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-fl2-flu_scale-255.0'
-model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-combined-flu_scale-1.0-ext-True'
+#model_name = 'cellcycle_flu-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-1984_v2-fted-True-loss-mse-act-relu-ch-combined-flu_scale-1.0-ext-True'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -52,8 +53,8 @@ for v in range(len(splits)):
 # 			ext = False
 
 DATA_DIR = '/data/datasets/{}'.format(dataset) 
-x_train_dir = os.path.join(DATA_DIR, 'train_images') if not ext else os.path.join(DATA_DIR, 'ext_train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(flu_header)) if not ext else os.path.join(DATA_DIR, 'ext_train_{}masks'.format(flu_header))
+x_train_dir = os.path.join(DATA_DIR, 'train_images') #if not ext else os.path.join(DATA_DIR, 'ext_train_images')
+y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(flu_header)) #if not ext else os.path.join(DATA_DIR, 'ext_train_{}masks'.format(flu_header))
 
 x_valid_dir = os.path.join(DATA_DIR, 'val_images')
 y_valid_dir = os.path.join(DATA_DIR, 'val_{}masks'.format(flu_header))
@@ -229,7 +230,8 @@ model = net_func(backbone, classes=n_classes, activation=activation)
 
 #load best weights
 model.load_weights(best_weight)
-
+## save model
+model.save(model_folder+'/ready_model.h5')
 # define optomizer
 # optim = tf.keras.optimizers.Adam(0.001)
 # 

@@ -35,7 +35,12 @@
 # JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun sigmoid --channels combined --dataset cell_cycle_1984 --ext False
 # JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun relu --channels fl1 --dataset cell_cycle_1984 --ext False
 
-JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun linear --channels fl1 --dataset cell_cycle_1984 --ext False
-JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun linear --channels fl2 --dataset cell_cycle_1984 --ext False
-JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun sigmoid --channels fl2 --dataset cell_cycle_1984 --ext False
-JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun relu --channels fl2 --dataset cell_cycle_1984 --ext False
+# JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun linear --channels fl1 --dataset cell_cycle_1984 --ext False
+# JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss mse --act_fun linear --channels fl2 --dataset cell_cycle_1984 --ext False
+# JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss mse --act_fun sigmoid --channels fl2 --dataset cell_cycle_1984 --ext False
+# JOB: python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss mse --act_fun relu --channels fl2 --dataset cell_cycle_1984 --ext False
+
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb0 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb1 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --train 900 --gpu 1 --loss focal+dice
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --train 900 --gpu 3 --loss focal+dice

@@ -14,13 +14,13 @@ sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '2'
-# model_root_folder = '/data/models/report_results/'
-model_root_folder = '/data/models/'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+model_root_folder = '/data/models/report_results/'
+# model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
-model_name = 'cellcycle-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-2-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-fact-1loss-focal+dice'
+model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -214,6 +214,8 @@ model = net_func(backbone, classes=n_classes, activation=activation)
 
 #load best weights
 model.load_weights(best_weight)
+## save model
+model.save(model_folder+'/ready_model.h5')
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(0.001)
