@@ -8,7 +8,7 @@ import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, DUNet
 sm.set_framework('tf.keras')
 
-from helper_function import plot_history
+from helper_function import plot_deeply_history
 from helper_function import precision, recall, f1_score
 from sklearn.metrics import confusion_matrix
 
