@@ -20,6 +20,20 @@ def plot_history(file_name, history):
 	ax[2].set_ylabel('f1-score');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
 
+def plot_deeply_history(file_name, history):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 1,1,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	ax[0].plot(history.history['softmax_loss']);ax[0].plot(history.history['val_softmax_loss'])
+	ax[0].set_ylabel('loss');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
+	ax[1].plot(history.history['softmax_iou_score']);ax[1].plot(history.history['val_softmax_iou_score'])
+	ax[1].set_ylabel('iou_score');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	ax[2].plot(history.history['softmax_f1-score']);ax[2].plot(history.history['val_softmax_f1-score'])
+	ax[2].set_ylabel('f1-score');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
+
 # plot for phase -> fluo validation loss
 def plot_history_flu(file_name, history):
 	import matplotlib.pyplot as plt

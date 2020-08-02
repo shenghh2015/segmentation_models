@@ -365,7 +365,7 @@ history = model.fit_generator(
 )
 
 # save the training information
-plot_history(model_folder+'/train_history.png',history)
+plot_deeply_history(model_folder+'/train_history.png',history)
 
 # evaluate model
 test_dataset = Dataset(
