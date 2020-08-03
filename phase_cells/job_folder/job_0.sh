@@ -1,2 +1,2 @@
-python phase_flu.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss mse --act_fun linear --channels combined --dataset cell_cycle_1984_v2 --ext False
+python deeply_train.py --net_type DUNet --backbone efficientnetb0 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 1e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
 
