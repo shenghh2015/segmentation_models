@@ -19,7 +19,7 @@ model_root_folder = '/data/models/'
 # model_root_folder = '/data/models/'
 
 # model_name = 'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-200-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice'
-model_name = 'deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice'
+model_name = 'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice'
 model_folder = model_root_folder+model_name
 
 ## parse model name
