@@ -44,3 +44,5 @@ python cell_cycle.py --net_type FPN --backbone resnet34 --pre_train True --batch
 python cell_cycle.py --net_type FPN --backbone resnet50 --pre_train True --batch_size 6 --down True --epoch 300 --lr 5e-4 --gpu 1
 python cell_cycle.py --net_type FPN --backbone resnet101 --pre_train True --batch_size 6 --down True --epoch 300 --lr 5e-4 --gpu 8
 
+python live_dead.py --net_type Unet --backbone efficientnetb1 --pre_train True --batch_size 6 --epoch 400 --lr 5e-4 --docker True --gpu 0
+
