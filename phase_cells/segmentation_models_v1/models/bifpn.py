@@ -116,7 +116,7 @@ def build_fpn(
     # building decoder blocks with skip connections
     skips = ([backbone.get_layer(name=i).output if isinstance(i, str)
               else backbone.get_layer(index=i).output for i in skip_connection_layers])
-    print(skips)
+
     # build FPN pyramid
     p5 = FPNBlock(pyramid_filters, stage=5)(x, skips[0])
     p4 = FPNBlock(pyramid_filters, stage=4)(p5, skips[1])
@@ -172,7 +172,7 @@ def build_fpn(
 #  FPN Model
 # ---------------------------------------------------------------------
 
-def FPN(
+def BiFPN(
         backbone_name='vgg16',
         input_shape=(None, None, 3),
         classes=21,

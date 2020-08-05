@@ -1,4 +1,5 @@
-FROM tensorflow/tensorflow:1.13.0rc1-gpu-py3
+#FROM tensorflow/tensorflow:1.13.0rc1-gpu-py3
+FROM tensorflow/tensorflow:1.14.0-gpu-py3
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades --allow-change-held-packages --no-install-recommends python3-pip python3-tk python2.7 git
 
