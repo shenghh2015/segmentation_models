@@ -9,6 +9,9 @@ layers = None
 models = None
 keras_utils = None
 
+# import sys
+# sys.
+from .EfficientDet.model import build_BiFPN
 
 # ---------------------------------------------------------------------
 #  Utility functions
@@ -98,9 +101,12 @@ def FPNBlock(pyramid_filters, stage):
 # ---------------------------------------------------------------------
 #  FPN Decoder
 # ---------------------------------------------------------------------
+w_bifpns = [64, 88, 112, 160, 224, 288, 384]
+d_bifpns = [3, 4, 5, 6, 7, 7, 8]
 
 def build_fpn(
         backbone,
+        backbone_name,
         skip_connection_layers,
         pyramid_filters=256,
         segmentation_filters=128,
@@ -117,6 +123,17 @@ def build_fpn(
     skips = ([backbone.get_layer(name=i).output if isinstance(i, str)
               else backbone.get_layer(index=i).output for i in skip_connection_layers])
 
+    # build biFPN pyramid
+    features = [x]; features = features + skips; print(features)
+    phi= int(backbone_name[-1])
+    w_bifpn, d_bifpn = w_bifpns[phi], d_bifpns[phi]
+    fpn_features = features; fpn_features.reverse()
+    for i in range(d_bifpn):
+        fpn_features = build_BiFPN(fpn_features, w_bifpn, i, freeze_bn=False)
+    fpn_features=list(fpn_features); fpn_features.reverse()
+    print(fpn_features)
+    x = fpn_features[0]; skips = fpn_features[1:]
+    
     # build FPN pyramid
     p5 = FPNBlock(pyramid_filters, stage=5)(x, skips[0])
     p4 = FPNBlock(pyramid_filters, stage=4)(p5, skips[1])
@@ -130,9 +147,10 @@ def build_fpn(
     s2 = DoubleConv3x3BnReLU(segmentation_filters, use_batchnorm, name='segm_stage2')(p2)
 
     # upsampling to same resolution
-    s5 = layers.UpSampling2D((8, 8), interpolation='nearest', name='upsampling_stage5')(s5)
-    s4 = layers.UpSampling2D((4, 4), interpolation='nearest', name='upsampling_stage4')(s4)
-    s3 = layers.UpSampling2D((2, 2), interpolation='nearest', name='upsampling_stage3')(s3)
+    s5 = layers.UpSampling2D((16,16), interpolation='nearest', name='upsampling_stage5')(s5)
+    s4 = layers.UpSampling2D((8, 8), interpolation='nearest', name='upsampling_stage4')(s4)
+    s3 = layers.UpSampling2D((4, 4), interpolation='nearest', name='upsampling_stage3')(s3)
+    s2 = layers.UpSampling2D((2, 2), interpolation='nearest', name='upsampling_stage2')(s2)
 
     # aggregating results
     if aggregation == 'sum':
@@ -149,7 +167,7 @@ def build_fpn(
 
     # final stage
     x = Conv3x3BnReLU(segmentation_filters, use_batchnorm, name='final_stage')(x)
-    x = layers.UpSampling2D(size=(2, 2), interpolation='bilinear', name='final_upsampling')(x)
+    x = layers.UpSampling2D(size=(4, 4), interpolation='bilinear', name='final_upsampling')(x)
 
     # model head (define number of output classes)
     x = layers.Conv2D(
@@ -233,6 +251,7 @@ def BiFPN(
 
     model = build_fpn(
         backbone=backbone,
+        backbone_name=backbone_name,
         skip_connection_layers=encoder_features,
         pyramid_filters=pyramid_block_filters,
         segmentation_filters=pyramid_block_filters // 2,

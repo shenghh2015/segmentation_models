@@ -22,8 +22,8 @@ def generate_folder(folder_name):
 parser = argparse.ArgumentParser()
 parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--gpu", type=str, default = '0')
-parser.add_argument("--net_type", type=str, default = 'DUNet')  #Unet, Linknet, PSPNet, FPN
-parser.add_argument("--backbone", type=str, default = 'efficientnetb3')
+parser.add_argument("--net_type", type=str, default = 'BiFPN')  #Unet, Linknet, PSPNet, FPN
+parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
 parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--batch_size", type=int, default = 2)
@@ -44,12 +44,12 @@ print(model_name)
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 if args.dataset == 'live_dead':
-	val_dim = 832
+	val_dim = 896; img_dim = 832
 	train_image_set = 'train_images2'
 	val_image_set = 'val_images2'
 	test_image_set = 'test_images2'
 elif args.dataset == 'cell_cycle_1984_v2':
-	val_dim = 1984
+	val_dim = 2048; img_dim = 1984
 	train_image_set = 'train_images'
 	val_image_set = 'val_images'
 	test_image_set = 'test_images'
@@ -389,6 +389,10 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+# crop the results
+offset1, offset2 = int((val_dim-img_dim)/2), val_dim-int((val_dim-img_dim)/2)
+gt_maps=gt_maps[:,offset1:offset2,offset1:offset2]
+pr_maps=pr_maps[:,offset1:offset2,offset1:offset2]
 y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 cf_mat = confusion_matrix(y_true, y_pred)
 cf_mat_reord = np.zeros(cf_mat.shape)
