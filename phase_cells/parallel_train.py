@@ -11,6 +11,8 @@ sm.set_framework('tf.keras')
 from helper_function import plot_deeply_history, plot_history
 from helper_function import precision, recall, f1_score
 from sklearn.metrics import confusion_matrix
+from parallel_model_v1 import make_parallel
+import random
 
 def str2bool(value):
     return value.lower() == 'true'
@@ -35,9 +37,9 @@ parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
 args = parser.parse_args()
 print(args)
-
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}'.format(args.net_type,\
-		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
+GPU_COUNT = len(args.gpu.split(','))
+model_name = 'parallel-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}x{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}'.format(args.net_type,\
+		 	args.backbone, args.pre_train, args.epoch, args.batch_size, GPU_COUNT, args.lr, args.dim,\
 		 	args.train, args.rot, args.dataset, args.loss)
 print(model_name)
 
@@ -87,6 +89,7 @@ class Dataset:
             images_dir, 
             masks_dir, 
             classes=None,
+            batch_size = 1,
             nb_data=None,
             augmentation=None, 
             preprocessing=None,
@@ -96,6 +99,9 @@ class Dataset:
             self.ids = id_list
         else:
             self.ids = id_list[:int(min(nb_data,len(id_list)))]
+        if not len(self.ids)%batch_size == 0:
+            re_sampled_ids = random.sample(self.ids,batch_size-len(self.ids)%batch_size)
+            self.ids= self.ids + re_sampled_ids
         #self.ids = os.listdir(images_dir)
         self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
@@ -264,7 +270,7 @@ def get_preprocessing(preprocessing_fn):
 
 # BACKBONE = 'efficientnetb3'
 BACKBONE = args.backbone
-BATCH_SIZE = args.batch_size
+BATCH_SIZE = args.batch_size*GPU_COUNT
 CLASSES = ['live', 'inter', 'dead']
 LR = args.lr
 EPOCHS = args.epoch
@@ -282,6 +288,9 @@ encoder_weights='imagenet' if args.pre_train else None
 
 model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
+
+# parallelize the model
+model = make_parallel(model, GPU_COUNT)
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
@@ -321,6 +330,7 @@ train_dataset = Dataset(
     x_train_dir, 
     y_train_dir, 
     classes=CLASSES,
+    batch_size = BATCH_SIZE,
     nb_data=args.train,
     augmentation=get_training_augmentation(args.dim, args.rot),
     preprocessing=get_preprocessing(preprocess_input),
@@ -330,13 +340,14 @@ train_dataset = Dataset(
 valid_dataset = Dataset(
     x_valid_dir, 
     y_valid_dir, 
-    classes=CLASSES, 
+    classes=CLASSES,
+    batch_size = GPU_COUNT,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
 train_dataloader = Dataloder(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-valid_dataloader = Dataloder(valid_dataset, batch_size=1, shuffle=False)
+valid_dataloader = Dataloder(valid_dataset, batch_size=GPU_COUNT, shuffle=False)
 
 print(train_dataloader[0][0].shape)
 # check shapes for errors
@@ -370,12 +381,13 @@ plot_history(model_folder+'/train_history.png',history)
 test_dataset = Dataset(
     x_test_dir, 
     y_test_dir, 
-    classes=CLASSES, 
+    classes=CLASSES,
+    batch_size = GPU_COUNT,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
-test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+test_dataloader = Dataloder(test_dataset, batch_size=GPU_COUNT, shuffle=False)
 # load best weights
 model.load_weights(model_folder+'/best_model.h5')
 scores = model.evaluate_generator(test_dataloader)
@@ -389,6 +401,9 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+resample_num = GPU_COUNT-len(test_dataset)%GPU_COUNT  # the number of added resampled images
+gt_maps = gt_maps[:-resample_num+1,:,:]; pr_maps = pr_maps[:-resample_num+1, :,:]
+print('ground truth shape:{}'.format(gt_maps.shape)); print('predicted shape:{}'.format(pr_maps.shape))
 y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 cf_mat = confusion_matrix(y_true, y_pred)
 cf_mat_reord = np.zeros(cf_mat.shape)

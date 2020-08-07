@@ -1,0 +1,1 @@
+python parallel_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 896 --epoch 100 --lr 5e-4 --dataset live_dead --train 900 --gpu 0,1,2,3 --loss focal+dice

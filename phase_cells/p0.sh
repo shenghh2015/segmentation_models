@@ -14,4 +14,5 @@
 # python deeply_train.py --net_type DUNet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 1 --lr 5e-4 --dataset live_dead --train 900 --gpu 1 --loss focal+dice
 # python single_train.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 512 --epoch 1 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
 # python single_train.py --net_type BiFPN --backbone efficientnetb0 --pre_train True --batch_size 4 --dim 512 --epoch 1 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
-python single_train.py --net_type BiFPN --backbone efficientnetb0 --pre_train True --batch_size 4 --dim 512 --epoch 1 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
+# python single_train.py --net_type BiFPN --backbone efficientnetb0 --pre_train True --batch_size 4 --dim 512 --epoch 1 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
+python single_train.py --net_type Nestnet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 512 --epoch 60 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice

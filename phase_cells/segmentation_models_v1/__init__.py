@@ -115,6 +115,7 @@ from .models.linknet import Linknet as _Linknet
 from .models.fpn import FPN as _FPN
 from .models.deeplyunet import DUNet as _DUNet
 from .models.bifpn import BiFPN as _BiFPN
+from .models.nestnet import Nestnet as _Nestnet
 
 Unet = inject_global_submodules(_Unet)
 PSPNet = inject_global_submodules(_PSPNet)
@@ -122,6 +123,8 @@ Linknet = inject_global_submodules(_Linknet)
 FPN = inject_global_submodules(_FPN)
 DUNet = inject_global_submodules(_DUNet)
 BiFPN = inject_global_submodules(_BiFPN)
+Nestnet = inject_global_submodules(_Nestnet)
+
 get_available_backbone_names = Backbones.models_names
 
 
@@ -137,7 +140,7 @@ def get_preprocessing(name):
 
 
 __all__ = [
-    'Unet', 'PSPNet', 'FPN', 'Linknet','DUNet', 'BiFPN',
+    'Unet', 'PSPNet', 'FPN', 'Linknet','DUNet', 'BiFPN', 'Nestnet',
     'set_framework', 'framework',
     'get_preprocessing', 'get_available_backbone_names',
     'losses', 'metrics', 'utils',
