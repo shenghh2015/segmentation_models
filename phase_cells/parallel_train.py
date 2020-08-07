@@ -11,7 +11,8 @@ sm.set_framework('tf.keras')
 from helper_function import plot_deeply_history, plot_history
 from helper_function import precision, recall, f1_score
 from sklearn.metrics import confusion_matrix
-from tensorflow.keras.utils import multi_gpu_model
+# from tensorflow.keras.utils import multi_gpu_model
+from parallel_model import ParallelModel
 import random
 
 def str2bool(value):
@@ -290,7 +291,7 @@ model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, a
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # parallelize the model
-model = multi_gpu_model(model, GPU_COUNT)
+model = ParallelModel(model, GPU_COUNT)
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
