@@ -402,7 +402,8 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
-resample_num = GPU_COUNT-len(test_dataset)%GPU_COUNT  # the number of added resampled images
+# resample_num = GPU_COUNT-len(test_dataset)%GPU_COUNT  # the number of added resampled images
+test_offset = 99 if args.dataset == 'live_dead' else 100
 gt_maps = gt_maps[:-resample_num+1,:,:]; pr_maps = pr_maps[:-resample_num+1, :,:]
 print('ground truth shape:{}'.format(gt_maps.shape)); print('predicted shape:{}'.format(pr_maps.shape))
 y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
