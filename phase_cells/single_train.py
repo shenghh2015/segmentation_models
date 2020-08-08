@@ -44,12 +44,14 @@ print(model_name)
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 if args.dataset == 'live_dead':
-	val_dim = 832
+	val_dim = 832 if not args.net_type == 'PSPNet' else 864
+	test_dim = val_dim; img_dim = 832
 	train_image_set = 'train_images2'
 	val_image_set = 'val_images2'
 	test_image_set = 'test_images2'
 elif args.dataset == 'cell_cycle_1984_v2':
-	val_dim = 1984
+	val_dim = 1984 if not args.net_type == 'PSPNet' else 2016
+	test_dim = val_dim; img_dim = 1984
 	train_image_set = 'train_images'
 	val_image_set = 'val_images'
 	test_image_set = 'test_images'
@@ -240,7 +242,8 @@ def get_training_augmentation(dim = 512, rot_limit = 45):
 def get_validation_augmentation(dim = 832):
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
-        A.PadIfNeeded(dim, dim)
+        A.PadIfNeeded(dim, dim),
+        A.RandomCrop(height=dim, width=dim, always_apply=True)
 #         A.PadIfNeeded(384, 480)
     ]
     return A.Compose(test_transform)
@@ -280,7 +283,10 @@ net_func = globals()[args.net_type]
 
 encoder_weights='imagenet' if args.pre_train else None
 
-model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+if not args.net_type=='PSPNet':
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+else:
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer
@@ -325,6 +331,9 @@ train_dataset = Dataset(
     augmentation=get_training_augmentation(args.dim, args.rot),
     preprocessing=get_preprocessing(preprocess_input),
 )
+
+if args.net_type == 'PSPNet':
+    val_dim = args.dim
 
 # Dataset for validation images
 valid_dataset = Dataset(
@@ -371,11 +380,12 @@ test_dataset = Dataset(
     x_test_dir, 
     y_test_dir, 
     classes=CLASSES, 
-    augmentation=get_validation_augmentation(val_dim),
+    augmentation=get_validation_augmentation(test_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation)
 # load best weights
 model.load_weights(model_folder+'/best_model.h5')
 scores = model.evaluate_generator(test_dataloader)
@@ -389,6 +399,14 @@ gt_masks = []
 for i in range(len(test_dataset)):
     _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+
+# crop 
+if args.net_type == 'PSPNet':
+	offset1, offset2 = int((test_dim-img_dim)/2), val_dim-int((test_dim-img_dim)/2)
+	gt_maps=gt_maps[:,offset1:offset2,offset1:offset2]
+	pr_maps=pr_maps[:,offset1:offset2,offset1:offset2]
+	print('PSP output: {}'.format(pr_maps))
+
 y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 cf_mat = confusion_matrix(y_true, y_pred)
 cf_mat_reord = np.zeros(cf_mat.shape)

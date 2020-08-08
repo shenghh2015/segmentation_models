@@ -85,4 +85,7 @@
 # JOB: python biFPN_train.py --net_type BiFPN --backbone efficientnetb2 --pre_train True --batch_size 3 --dim 896 --epoch 120 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 2 --loss focal+dice
 # JOB: python biFPN_train.py --net_type BiFPN --backbone efficientnetb3 --pre_train True --batch_size 3 --dim 896 --epoch 120 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 3 --loss focal+dice
 
-JOB: python parallel_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 3 --dim 896 --epoch 120 --lr 5e-4 --dataset live_dead --train 900 --gpu 0,1,2,3 --loss focal+dice
+JOB: python single_train.py --net_type PSPNet --backbone efficientnetb0 --pre_train True --batch_size 14 --dim 528 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice
+JOB: python single_train.py --net_type PSPNet --backbone efficientnetb1 --pre_train True --batch_size 14 --dim 528 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 1 --loss focal+dice
+JOB: python single_train.py --net_type PSPNet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 528 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice
+JOB: python single_train.py --net_type PSPNet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 528 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 3 --loss focal+dice
