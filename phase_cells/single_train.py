@@ -386,6 +386,8 @@ test_dataset = Dataset(
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation)
+model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
+
 # load best weights
 model.load_weights(model_folder+'/best_model.h5')
 scores = model.evaluate_generator(test_dataloader)
@@ -405,7 +407,7 @@ if args.net_type == 'PSPNet':
 	offset1, offset2 = int((test_dim-img_dim)/2), val_dim-int((test_dim-img_dim)/2)
 	gt_maps=gt_maps[:,offset1:offset2,offset1:offset2]
 	pr_maps=pr_maps[:,offset1:offset2,offset1:offset2]
-	print('PSP output: {}'.format(pr_maps))
+	print('PSP output: {}'.format(pr_maps.shape))
 
 y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 cf_mat = confusion_matrix(y_true, y_pred)
