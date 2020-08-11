@@ -279,6 +279,8 @@ if args.loss == 'mse':
 	loss = tf.keras.losses.MSE
 elif args.loss == 'mae':
 	loss = tf.keras.losses.MAE
+elif args.loss == 'mse+focal':
+	loss = sm.losses.MSELoss() +sm.losses.BinaryFocalLoss()
 
 # metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
 metrics = [sm.metrics.PSNR(max_val=1.0)]

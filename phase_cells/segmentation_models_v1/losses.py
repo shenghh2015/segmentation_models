@@ -1,5 +1,6 @@
 from .base import Loss
 from .base import functional as F
+import tensorflow as tf
 
 SMOOTH = 1e-5
 
@@ -237,6 +238,33 @@ class BinaryFocalLoss(Loss):
     def __call__(self, gt, pr):
         return F.binary_focal_loss(gt, pr, alpha=self.alpha, gamma=self.gamma, **self.submodules)
 
+class MSELoss(Loss):
+    r"""Creates a criterion that measures the Binary Focal Loss between the
+    ground truth (gt) and the prediction (pr).
+
+    .. math:: L(gt, pr) = - gt \alpha (1 - pr)^\gamma \log(pr) - (1 - gt) \alpha pr^\gamma \log(1 - pr)
+
+    Args:
+        alpha: Float or integer, the same as weighting factor in balanced cross entropy, default 0.25.
+        gamma: Float or integer, focusing parameter for modulating factor (1 - p), default 2.0.
+
+    Returns:
+        A callable ``binary_focal_loss`` instance. Can be used in ``model.compile(...)`` function
+        or combined with other losses.
+
+    Example:
+
+    .. code:: python
+
+        loss = BinaryFocalLoss()
+        model.compile('SGD', loss=loss)
+    """
+
+    def __init__(self):
+        super().__init__(name='mse_loss')
+
+    def __call__(self, gt, pr):
+        return tf.keras.losses.MSE(gt, pr)
 
 # aliases
 jaccard_loss = JaccardLoss()
