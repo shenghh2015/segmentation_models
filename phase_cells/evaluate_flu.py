@@ -31,7 +31,8 @@ model_folder = model_root_folder+model_name
 
 ## parse model name
 splits = model_name.split('-')
-dataset = 'cell_cycle_1984_v2'
+# dataset = 'cell_cycle_1984_v2'
+dataset = 'cell_cycle_1984'
 val_dim = 1984
 
 flu_scale = 1.0
@@ -297,6 +298,9 @@ print('Load difference: {:.6f}'.format(np.mean(np.abs(gt_masks-gt_maps))))
 # save prediction examples
 plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 4
 plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images, rand_seed = 6)
+
+import grant_helper_function as ghf
+ghf.plot_flu_prediction(model_folder+'/pred_examples_colorbar.png', images, gt_masks, pr_masks, nb_images, rand_seed = 6)
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])

@@ -28,6 +28,8 @@ parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--dataset", type=str, default = 'live_dead')
+parser.add_argument("--upsample", type=str, default = 'upsampling')
+parser.add_argument("--filters", type=int, default = 256)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
@@ -36,9 +38,9 @@ parser.add_argument("--loss", type=str, default = 'focal+dice')
 args = parser.parse_args()
 print(args)
 
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}'.format(args.net_type,\
+model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-up-{}-filters-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.loss)
+		 	args.train, args.rot, args.dataset, args.loss, args.upsample, args.filters)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -286,7 +288,9 @@ encoder_weights='imagenet' if args.pre_train else None
 if not args.net_type=='PSPNet':
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
 else:
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3),\
+    		classes=n_classes, activation=activation, decoder_block_type = args.upsample,\
+    		decoder_filters=(int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16)))
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer
