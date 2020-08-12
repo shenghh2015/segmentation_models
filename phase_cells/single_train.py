@@ -286,11 +286,12 @@ net_func = globals()[args.net_type]
 encoder_weights='imagenet' if args.pre_train else None
 
 if not args.net_type=='PSPNet':
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
-else:
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3),\
-    		classes=n_classes, activation=activation, decoder_block_type = args.upsample,\
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation,\
+    		decoder_block_type = args.upsample,\
     		decoder_filters=(int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16)))
+    print('{}'.format((int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16))))
+else:
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3),classes=n_classes, activation=activation)
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer
