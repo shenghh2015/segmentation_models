@@ -282,7 +282,7 @@ elif args.loss == 'mae':
 elif args.loss == 'mse+focal':
 	loss = sm.losses.MSELoss() +sm.losses.BinaryFocalLoss()
 elif args.loss == 'wmse':
-	loss = sm.losses.wMSELoss()
+	loss = sm.losses.wMSELoss(gt_mean = False)
 
 # metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
 metrics = [sm.metrics.PSNR(max_val=1.0)]

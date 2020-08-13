@@ -288,7 +288,7 @@ class wMSELoss(Loss):
         model.compile('SGD', loss=loss)
     """
 
-    def __init__(self, lamda=1.0, beta=0.5):
+    def __init__(self, lamda=1.0, beta=0.5, gt_mean = True):
         super().__init__(name='weighted_mse_loss')
         self.lamda = lamda
         self.beta = beta
@@ -296,7 +296,10 @@ class wMSELoss(Loss):
     def __call__(self, gt, pr):
 #         gt_tensor = tf.convert_to_tensor(gt)
         square_err = tf.square(gt-pr)
-        weight_map = self.beta*gt +self.lamda*tf.reduce_mean(gt, axis = [1,2,3], keepdims = True)
+        if gt_mean:
+			weight_map = self.beta*gt +self.lamda*tf.reduce_mean(gt, axis = [1,2,3], keepdims = True)
+		else:
+		    weight_map = self.beta*gt + 1
 #         square_err = tf.reduce_mean(tf.square(gt-pr))
         return tf.reduce_mean(weight_map*square_err)
 
