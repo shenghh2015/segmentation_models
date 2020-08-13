@@ -297,10 +297,11 @@ class wMSELoss(Loss):
     def __call__(self, gt, pr):
 
         square_err = tf.square(gt-pr)
-	if self.gt_mean:
-	    weight_map = self.beta*gt +self.lamda*tf.reduce_mean(gt, axis = [1,2,3], keepdims = True)
-	else:
-	    weight_map = self.beta*gt + 1
+        if self.gt_mean:
+            weight_map = self.beta*gt +self.lamda*tf.reduce_mean(gt, axis = [1,2,3], keepdims = True)
+        else:
+            weight_map = self.beta*gt + 1
+        
         return tf.reduce_mean(weight_map*square_err)
 
 # aliases
