@@ -120,7 +120,13 @@
 # JOB: python single_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice --filters 512 --upsample transpose
 # JOB: python single_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 150 --lr 5e-4 --dataset live_dead --train 900 --gpu 3 --loss focal+dice --filters 512 --upsample transpose
 
-JOB: python single_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 0 --loss focal+dice --filters 512 --upsample upsampling
-JOB: python single_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 1 --loss focal+dice --filters 512 --upsample upsampling
-JOB: python single_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 2 --loss focal+dice --filters 512 --upsample transpose
-JOB: python single_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 3 --loss focal+dice --filters 512 --upsample transpose
+# JOB: python single_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 0 --loss focal+dice --filters 512 --upsample upsampling
+# JOB: python single_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 1 --loss focal+dice --filters 512 --upsample upsampling
+# JOB: python single_train.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 2 --loss focal+dice --filters 512 --upsample transpose
+# JOB: python single_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 150 --lr 5e-4 --dataset cell_cycle_1984_v2 --train 900 --gpu 3 --loss focal+dice --filters 512 --upsample transpose
+
+JOB: python phase_fl_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 0 --loss wmse --act_fun sigmoid --channels combined --dataset cell_cycle_1984 --ext False
+JOB: python phase_fl_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 1 --loss wmse --act_fun sigmoid --channels combined --dataset cell_cycle_1984_v2 --ext False
+JOB: python phase_fl_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 2 --loss wmse --act_fun sigmoid --channels combined --dataset cell_cycle_1984_v2 --ext True
+JOB: python phase_fl_train.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 800 --epoch 60 --lr 5e-4 --train 1100 --filtered True --gpu 3 --loss wmse --act_fun relu --channels combined --dataset cell_cycle_1984 --ext False
+

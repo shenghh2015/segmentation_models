@@ -15,12 +15,13 @@ import glob
 from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-model_root_folder = '/data/models/report_results/'
-# model_root_folder = '/data/models/'
+#model_root_folder = '/data/models/report_results/'
+model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
-model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
+# model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
+model_name = 'single-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice-up-transpose-filters-512'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -32,6 +33,7 @@ else:
 	dataset = 'live_dead'
 	val_dim = 832
 
+nb_filters = 256
 for v in range(len(splits)):
 	if splits[v]=='set':
 		if splits[v+1] == 'dead':
@@ -45,11 +47,19 @@ for v in range(len(splits)):
 		if splits[v+1] == '1984_v2':
 			dataset = 'cell_cycle_'+splits[v+1]
 			val_dim = 1984
+		if splits[v+1] == 'cell_cycle_1984_v2':
+			dataset = splits[v+1]
+			val_dim = 1984
 	elif splits[v] == 'net':
 		net_arch = splits[v+1]
 	elif splits[v] == 'bone':
 		backbone = splits[v+1]
+	elif splits[v] == 'up':
+		upsample = splits[v+1]
+	elif splits[v] == 'filters':
+		nb_filters = int(splits[v+1])
 
+				
 DATA_DIR = '/data/datasets/{}'.format(dataset)
 x_train_dir = os.path.join(DATA_DIR, 'train_images')
 y_train_dir = os.path.join(DATA_DIR, 'train_masks')
@@ -210,7 +220,10 @@ CLASSES = ['live', 'inter', 'dead']
 n_classes = len(CLASSES) + 1
 activation = 'softmax'
 net_func = globals()[net_arch]
-model = net_func(backbone, classes=n_classes, activation=activation)
+decoder_filters=(int(nb_filters),int(nb_filters/2), int(nb_filters/4), int(nb_filters/8), int(nb_filters/16))
+model = net_func(backbone, classes=n_classes, activation=activation,\
+		decoder_block_type = upsample, decoder_filters = decoder_filters)
+# model = net_func(backbone, classes=n_classes, activation=activation)
 
 #load best weights
 model.load_weights(best_weight)
