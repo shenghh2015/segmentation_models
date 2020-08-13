@@ -34,6 +34,7 @@ parser.add_argument("--channels", type=str, default = 'fl1')
 parser.add_argument("--ext", type=str2bool, default = False)
 parser.add_argument("--epoch", type=int, default = 300)
 parser.add_argument("--dim", type=int, default = 512)
+parser.add_argument("--gt_weight", type=float, default = 0.5)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--flu_scale", type=float, default = 1.0)
 parser.add_argument("--train", type=int, default = None)
@@ -45,8 +46,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'phase_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-ext-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.ext)
+model_name = 'phase_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-ext-{}-gt_weight-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.ext, args.gt_weight)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -282,7 +283,7 @@ elif args.loss == 'mae':
 elif args.loss == 'mse+focal':
 	loss = sm.losses.MSELoss() +sm.losses.BinaryFocalLoss()
 elif args.loss == 'wmse':
-	loss = sm.losses.wMSELoss(gt_mean = False)
+	loss = sm.losses.wMSELoss(beta = args.gt_weight, gt_mean = False)
 
 # metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
 metrics = [sm.metrics.PSNR(max_val=1.0)]
