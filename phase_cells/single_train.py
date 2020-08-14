@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 import segmentation_models_v1 as sm
-from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, DUNet, BiFPN, Nestnet
+from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, DUNet, BiFPN, Nestnet, ResUnet
 sm.set_framework('tf.keras')
 
 from helper_function import plot_deeply_history, plot_history
