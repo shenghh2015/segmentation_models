@@ -5,6 +5,14 @@ def generate_folder(folder):
 	if not os.path.exists(folder):
 		os.system('mkdir -p {}'.format(folder))
 
+def save_history(file_dir, history):
+	np.savetxt(file_dir+'/train_loss.txt', history.history['loss'])
+	np.savetxt(file_dir+'/val_loss.txt', history.history['val_loss'])
+	np.savetxt(file_dir+'/train_iou_score.txt', history.history['iou_score'])
+	np.savetxt(file_dir+'/val_iou_score.txt', history.history['val_iou_score'])
+	np.savetxt(file_dir+'/train_f1-score.txt', history.history['f1-score'])
+	np.savetxt(file_dir+'/val_f1-score.txt', history.history['val_f1-score'])
+	
 # plot training and validation loss
 def plot_history(file_name, history):
 	import matplotlib.pyplot as plt

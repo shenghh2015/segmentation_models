@@ -15,13 +15,13 @@ import glob
 from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-#model_root_folder = '/data/models/report_results/'
-model_root_folder = '/data/models/'
+model_root_folder = '/data/models/report_results/'
+#model_root_folder = '/data/models/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
-# model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
-model_name = 'single-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice-up-transpose-filters-512'
+model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
+# model_name = 'single-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice-up-transpose-filters-512'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -34,6 +34,7 @@ else:
 	val_dim = 832
 
 nb_filters = 256
+upsample = 'upsampling'
 for v in range(len(splits)):
 	if splits[v]=='set':
 		if splits[v+1] == 'dead':

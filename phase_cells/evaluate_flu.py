@@ -31,8 +31,8 @@ model_folder = model_root_folder+model_name
 
 ## parse model name
 splits = model_name.split('-')
-# dataset = 'cell_cycle_1984_v2'
-dataset = 'cell_cycle_1984'
+dataset = 'cell_cycle_1984_v2'
+#dataset = 'cell_cycle_1984'
 val_dim = 1984
 
 flu_scale = 1.0
@@ -301,6 +301,15 @@ plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images, rand_s
 
 import grant_helper_function as ghf
 ghf.plot_flu_prediction(model_folder+'/pred_examples_colorbar.png', images, gt_masks, pr_masks, nb_images, rand_seed = 6)
+ghf.plot_flu_prediction2(model_folder+'/grants_fl', images, gt_masks, pr_masks, nb_images, rand_seed = 6)
+cut_folder = '/data/cut_results/life_cycle_992_640/testv2_latest/images/fake_B'; image_ids = test_dataset.ids
+ghf.plot_flu_prediction3(model_folder+'/unpaired_examples_colorbar.png', images, gt_masks, pr_masks, cut_folder, image_ids, nb_images, rand_seed = 6)
+ghf.plot_flu_prediction4(model_folder+'/grants_fl', images, gt_masks, pr_masks, cut_folder, image_ids, nb_images, rand_seed = 6)
+unet_folder = '/data/U-net_results/'
+fl1_folder = unet_folder +'result_train_glim_to_fl1_fil_20200819_181527_final_model/pred_test/'
+fl2_folder = unet_folder +'result_train_glim_to_fl2_fil_20200820_141534_final_model/pred_test/'
+ghf.plot_flu_prediction7(model_folder+'/unpaired_examples_colorbar_v2.png', images, gt_masks, pr_masks, cut_folder, fl1_folder, fl2_folder, image_ids, nb_images, rand_seed = 2)
+ghf.plot_flu_prediction8(model_folder+'/grants_fl_v2', images, gt_masks, pr_masks, cut_folder, fl1_folder, fl2_folder, image_ids, nb_images, rand_seed = 2)
 
 # calculate PSNR
 f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
