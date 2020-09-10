@@ -1,2 +1,2 @@
-python single_train_v2.py --net_type Unet --backbone efficientnetb5 --pre_train True --batch_size 1 --dim 992 --epoch 200 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 1 --loss focal+dice --filters 256 --upsample upsampling
+python single_train_v2.py --net_type Unet --backbone efficientnetb1 --pre_train True --batch_size 3 --dim 992 --epoch 200 --lr 5e-4 --dataset cell_cycle_1984 --ext False --train 1100 --gpu 1 --loss focal+dice --filters 256 --upsample upsampling
 
