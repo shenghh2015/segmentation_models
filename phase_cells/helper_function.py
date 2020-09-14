@@ -19,13 +19,14 @@ def plot_history(file_name, history):
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
 	from matplotlib.figure import Figure
 	rows, cols, size = 1,3,5
+	font_size = 15
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	ax[0].plot(history.history['loss']);ax[0].plot(history.history['val_loss'])
-	ax[0].set_ylabel('loss');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
+	ax[0].set_ylabel('Dice_focal_loss', fontsize = font_size);ax[0].set_xlabel('Epochs', fontsize = font_size);ax[0].legend(['train','valid'], fontsize = font_size)
 	ax[1].plot(history.history['iou_score']);ax[1].plot(history.history['val_iou_score'])
-	ax[1].set_ylabel('iou_score');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	ax[1].set_ylabel('IoU', fontsize = font_size);ax[1].set_xlabel('Epochs', fontsize = font_size);ax[1].legend(['train','valid'], fontsize = font_size)
 	ax[2].plot(history.history['f1-score']);ax[2].plot(history.history['val_f1-score'])
-	ax[2].set_ylabel('f1-score');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
+	ax[2].set_ylabel('Dice_Coefficient', fontsize = font_size);ax[2].set_xlabel('Epochs', fontsize = font_size);ax[2].legend(['train','valid'], fontsize = font_size)
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
 
 def plot_deeply_history(file_name, history):

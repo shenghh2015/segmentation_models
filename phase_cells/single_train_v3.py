@@ -400,7 +400,7 @@ model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_
 model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
 
 # load best weights
-model.load_weights(model_folder+'/model_{:02d}.h5'.format(np.argmin(history.history['val_loss'])+1))
+model.load_weights(model_folder+'/best_model.h5')
 
 scores = model.evaluate_generator(test_dataloader)
 print("Loss: {:.5}".format(scores[0]))
