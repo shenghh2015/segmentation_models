@@ -365,10 +365,15 @@ generate_folder(model_folder)
 
 
 # define callbacks for learning rate scheduling and best checkpoints saving
-callbacks = [
-    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
-    tf.keras.callbacks.ReduceLROnPlateau(factor=args.reduce_factor),
-]
+if args.reduce_factor < 1.0:
+	callbacks = [
+		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
+		tf.keras.callbacks.ReduceLROnPlateau(factor=args.reduce_factor),
+	]
+else:
+	callbacks = [
+		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min')
+	]
 
 # train model
 history = model.fit_generator(
