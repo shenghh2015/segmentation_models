@@ -4,25 +4,51 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+import sys
+sys.path.append('../')
 import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, DUNet
 
-from helper_function import precision, recall, f1_score, iou_calculate
+from helper_function import precision, recall, f1_score, iou_calculate, generate_folder
 from sklearn.metrics import confusion_matrix
 
 sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-model_root_folder = '/data/models/'
+parser = argparse.ArgumentParser()
+parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--model_index", type=int, default = 0)
+parser.add_argument("--subset", type=str, default = 'test')  # 'train', 'val', 'test'
+args = parser.parse_args()
+print(args)
+
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+index = args.model_index
+subset = args.subset
+nb_train_test = 200
 # model_root_folder = '/data/models/'
+# model_root_folder = '/data/models/'
+model_root_folder = '/data/models/deeply_result_0915/'
 
 # model_name = 'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-200-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice'
-model_name = 'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice'
+# model_name = 'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-200-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice'
+
+model_names = ['deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb1-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb1-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb2-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb2-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0'
+			]
+model_name = model_names[index]
+print(model_name)
 model_folder = model_root_folder+model_name
 
 ## parse model name
+ext_flag = False
 splits = model_name.split('-')
 
 for v in range(len(splits)):
@@ -32,10 +58,12 @@ for v in range(len(splits)):
 		net_arch = splits[v+1]
 	elif splits[v] == 'bone':
 		backbone = splits[v+1]
+	elif splits[v] == 'ext':
+		ext_flag = True if splits[v+1] =='True' else False
 
 DATA_DIR = '/data/datasets/{}'.format(dataset)
-x_train_dir = os.path.join(DATA_DIR, 'train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_masks')
+x_train_dir = os.path.join(DATA_DIR, 'train_images') if not ext_flag else os.path.join(DATA_DIR, 'ext_train_images')
+y_train_dir = os.path.join(DATA_DIR, 'train_masks')	 if not ext_flag else os.path.join(DATA_DIR, 'ext_train_masks')
 
 x_valid_dir = os.path.join(DATA_DIR, 'val_images')
 y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
@@ -211,9 +239,13 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
+# save results
+result_dir = os.path.join(model_folder,'eval_train_val_test')
+generate_folder(result_dir)
+
 # evaluate model
-subsets = ['train', 'val', 'test']
-subset = subsets[2]
+# subsets = ['train', 'val', 'test']
+# subset = subsets[2]
 
 if subset == 'val':
 	x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
@@ -259,3 +291,17 @@ for i in range(cf_mat.shape[0]):
 print('Precision: {}, mean {}'.format(np.round(prec_scores, 4),round(np.mean(prec_scores),4)))
 print('Recall: {}, mean {}'.format(np.round(recall_scores, 4),round(np.mean(recall_scores),4)))
 print('f1 score: {}, mean {}'.format(np.round(f1_scores, 4),round(np.mean(f1_scores),4)))
+
+with open(result_dir+'/{}_summary.txt'.format(subset), 'w+') as f:
+	# save iou and dice
+	f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
+	f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+	# save confusion matrix
+	f.write('confusion matrix:\n')
+	np.savetxt(f, cf_mat_reord, fmt='%-7d')
+	# save precision
+	f.write('Precision: {}, mean {}'.format(np.round(prec_scores, 4),round(np.mean(prec_scores),4)))
+	# save recall
+	f.write('Recall: {}, mean {}'.format(np.round(recall_scores, 4),round(np.mean(recall_scores),4)))
+	# save f1-score
+	f.write('f1 score: {}, mean {}'.format(np.round(f1_scores, 4),round(np.mean(f1_scores),4)))
