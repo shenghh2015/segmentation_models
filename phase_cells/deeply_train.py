@@ -31,15 +31,16 @@ parser.add_argument("--dataset", type=str, default = 'live_dead')
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
+parser.add_argument("--ext", type=str2bool, default = False)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
 parser.add_argument("--reduce_factor", type=float, default = 0.1)
 args = parser.parse_args()
 print(args)
 
-model_name = 'deeply-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-red_factor-{}'.format(args.net_type,\
+model_name = 'deeply-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-red_factor-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.loss, args.reduce_factor)
+		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.reduce_factor)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -56,8 +57,8 @@ elif args.dataset == 'cell_cycle_1984_v2':
 	test_image_set = 'test_images'
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
-x_train_dir = os.path.join(DATA_DIR, train_image_set)
-y_train_dir = os.path.join(DATA_DIR, 'train_masks')
+x_train_dir = os.path.join(DATA_DIR, train_image_set) if not args.ext else os.path.join(DATA_DIR, 'ext_train_images')
+y_train_dir = os.path.join(DATA_DIR, 'train_masks') if not args.ext else os.path.join(DATA_DIR, 'ext_train_masks')
 
 x_valid_dir = os.path.join(DATA_DIR, val_image_set)
 y_valid_dir = os.path.join(DATA_DIR, 'val_masks')

@@ -205,7 +205,12 @@
 # JOB: python single_train_v3.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 0.2
 # JOB: python single_train_v3.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 0.2
 
-JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb0 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice --reduce_factor 1.0
-JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb1 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 1 --loss focal+dice --reduce_factor 1.0
-JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice --reduce_factor 1.0
-JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 3 --loss focal+dice --reduce_factor 1.0
+# JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb0 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 0 --loss focal+dice --reduce_factor 1.0
+# JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb1 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 1 --loss focal+dice --reduce_factor 1.0
+# JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice --reduce_factor 1.0
+# JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb3 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 3 --loss focal+dice --reduce_factor 1.0
+
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb0 --pre_train True --batch_size 3 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 0 --loss focal+dice --reduce_factor 1.0
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb1 --pre_train True --batch_size 3 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 1 --loss focal+dice --reduce_factor 1.0
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb2 --pre_train True --batch_size 3 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 2 --loss focal+dice --reduce_factor 1.0
+JOB: python deeply_train.py --net_type DUNet --backbone efficientnetb3 --pre_train True --batch_size 2 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 3 --loss focal+dice --reduce_factor 1.0
