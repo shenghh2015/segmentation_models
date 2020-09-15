@@ -1,2 +1,2 @@
-python single_train_v3.py --net_type Unet --backbone efficientnetb2 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 0.2
+python deeply_train.py --net_type DUNet --backbone efficientnetb2 --pre_train True --batch_size 10 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --train 900 --gpu 2 --loss focal+dice --reduce_factor 1.0
 
