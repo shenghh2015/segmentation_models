@@ -8,7 +8,7 @@ import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, DUNet
 sm.set_framework('tf.keras')
 
-from helper_function import plot_deeply_history
+from helper_function import plot_deeply_history, save_history
 from helper_function import precision, recall, f1_score
 from sklearn.metrics import confusion_matrix
 
@@ -33,12 +33,13 @@ parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
+parser.add_argument("--reduce_factor", type=float, default = 0.1)
 args = parser.parse_args()
 print(args)
 
-model_name = 'deeply-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}'.format(args.net_type,\
+model_name = 'deeply-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-red_factor-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.loss)
+		 	args.train, args.rot, args.dataset, args.loss, args.reduce_factor)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -349,10 +350,15 @@ generate_folder(model_folder)
 
 
 # define callbacks for learning rate scheduling and best checkpoints saving
-callbacks = [
-    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
-    tf.keras.callbacks.ReduceLROnPlateau(),
-]
+if args.reduce_factor<1.0:
+	callbacks = [
+		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min')
+		tf.keras.callbacks.ReduceLROnPlateau(),
+	]
+else:
+	callbacks = [
+		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min')
+	]
 
 # train model
 history = model.fit_generator(
@@ -366,6 +372,10 @@ history = model.fit_generator(
 
 # save the training information
 plot_deeply_history(model_folder+'/train_history.png',history)
+record_dir = model_folder+'/train_dir'
+generate_folder(record_dir)
+save_history(record_dir, history)
+
 
 # evaluate model
 test_dataset = Dataset(
