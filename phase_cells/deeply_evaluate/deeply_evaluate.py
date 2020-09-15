@@ -26,7 +26,7 @@ print(args)
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 index = args.model_index
 subset = args.subset
-nb_train_test = 200
+nb_train_test = 100
 # model_root_folder = '/data/models/'
 # model_root_folder = '/data/models/'
 model_root_folder = '/data/models/deeply_result_0915/'
@@ -294,14 +294,14 @@ print('f1 score: {}, mean {}'.format(np.round(f1_scores, 4),round(np.mean(f1_sco
 
 with open(result_dir+'/{}_summary.txt'.format(subset), 'w+') as f:
 	# save iou and dice
-	f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
-	f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+	f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}\n'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
+	f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}\n'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
 	# save confusion matrix
 	f.write('confusion matrix:\n')
 	np.savetxt(f, cf_mat_reord, fmt='%-7d')
 	# save precision
-	f.write('Precision: {}, mean {}'.format(np.round(prec_scores, 4),round(np.mean(prec_scores),4)))
+	f.write('Precision: {}, mean {}\n'.format(np.round(prec_scores, 4),round(np.mean(prec_scores),4)))
 	# save recall
-	f.write('Recall: {}, mean {}'.format(np.round(recall_scores, 4),round(np.mean(recall_scores),4)))
+	f.write('Recall: {}, mean {}\n'.format(np.round(recall_scores, 4),round(np.mean(recall_scores),4)))
 	# save f1-score
-	f.write('f1 score: {}, mean {}'.format(np.round(f1_scores, 4),round(np.mean(f1_scores),4)))
+	f.write('f1 score: {}, mean {}\n'.format(np.round(f1_scores, 4),round(np.mean(f1_scores),4)))
