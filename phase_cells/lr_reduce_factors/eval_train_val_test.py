@@ -33,14 +33,16 @@ subset = args.subset
 model_root_folder = '/data/models/lr_reduce_factor/'
 nb_train_test = 200
 
-model_names = ['single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.2',
-			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.4',
-			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.6',
-			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8',
-			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.2',
-			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.4',
-			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.6',
-			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8']
+model_names = ['single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8'
+			]
+# model_names = ['single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.2',
+# 			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.4',
+# 			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.6',
+# 			   'single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8',
+# 			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.2',
+# 			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.4',
+# 			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.6',
+# 			   'single-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8']
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb0-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb1-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
