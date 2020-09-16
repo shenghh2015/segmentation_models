@@ -30,6 +30,7 @@ parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--dataset", type=str, default = 'live_dead')
 parser.add_argument("--ext", type=str2bool, default = False)
 parser.add_argument("--upsample", type=str, default = 'upsampling')
+parser.add_argument("--pyramid_agg", type=str, default = 'sum')
 parser.add_argument("--filters", type=int, default = 256)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
@@ -40,9 +41,9 @@ parser.add_argument("--reduce_factor", type=float, default = 0.1)
 args = parser.parse_args()
 print(args)
 
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}'.format(args.net_type,\
+model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor)
+		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -288,13 +289,17 @@ net_func = globals()[args.net_type]
 
 encoder_weights='imagenet' if args.pre_train else None
 
-if not args.net_type=='PSPNet':
+if args.net_type == 'PSPNet':
+	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
+elif args.net_type == 'FPN':
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = arg.pyramid_agg) 
+else:
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation,\
     		decoder_block_type = args.upsample,\
     		decoder_filters=(int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16)))
     print('{}'.format((int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16))))
-else:
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3),classes=n_classes, activation=activation)
+# else:
+#     model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
 # model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer
