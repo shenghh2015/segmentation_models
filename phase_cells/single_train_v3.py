@@ -292,7 +292,7 @@ encoder_weights='imagenet' if args.pre_train else None
 if args.net_type == 'PSPNet':
 	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
 elif args.net_type == 'FPN':
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = arg.pyramid_agg) 
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = args.pyramid_agg) 
 else:
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation,\
     		decoder_block_type = args.upsample,\
