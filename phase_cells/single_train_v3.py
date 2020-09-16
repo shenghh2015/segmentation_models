@@ -325,7 +325,7 @@ elif args.loss =='focal+jaccard+dice':
 	jaccard_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 	total_loss = dice_loss + jaccard_loss+ (1 * focal_loss)
-elif args.loss = 'forcal':
+elif args.loss == 'forcal':
 	total_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 # 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 # 	total_loss = dice_loss + (1 * focal_loss)
