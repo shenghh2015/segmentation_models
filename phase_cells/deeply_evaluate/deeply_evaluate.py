@@ -43,6 +43,16 @@ model_names = ['deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-400-batch-10
 				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
 				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0'
 			]
+
+# model_names = ['deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb0-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb1-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb1-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb2-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb2-pre-True-epoch-400-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-10-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-loss-focal+dice-red_factor-1.0',
+# 				'deeply-net-DUNet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-red_factor-1.0'
+# 			]
 model_name = model_names[index]
 print(model_name)
 model_folder = model_root_folder+model_name

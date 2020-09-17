@@ -33,10 +33,15 @@ subset = args.subset
 model_root_folder = '/data/models/FPN_results_0916/'
 nb_train_test = 200
 
-model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-6-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum']
+model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
+				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
+				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
+				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-6-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum']
+
+# model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
+# 				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
+# 				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
+# 				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-6-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum']
 
 # model_names = ['single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8'
 # 			]
