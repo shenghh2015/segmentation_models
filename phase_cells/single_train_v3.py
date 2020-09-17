@@ -408,7 +408,10 @@ test_dataset = Dataset(
 )
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation)
+if args.net_type == 'FPN':
+    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = args.pyramid_agg)
+else:
+	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation)
 model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
 
 # load best weights
