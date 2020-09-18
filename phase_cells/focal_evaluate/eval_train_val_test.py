@@ -30,24 +30,13 @@ print(args)
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 index = args.model_index
 subset = args.subset
-model_root_folder = '/data/models/FPN_results_0916/'
+model_root_folder = '/data/models/focal_result_0917/'
 nb_train_test = 200
 
-model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-1-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum']
-
-
-# model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-6-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum']
-
-# model_names = ['single-net-FPN-bone-efficientnetb0-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb1-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb2-pre-True-epoch-400-batch-8-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum',
-# 				'single-net-FPN-bone-efficientnetb3-pre-True-epoch-400-batch-6-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum']
+model_names = ['single-net-Unet-bone-efficientnetb0-pre-True-epoch-400-batch-14-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal-up-upsampling-filters-256-red_factor-0.4-pyr_agg-sum',
+				'single-net-Unet-bone-efficientnetb1-pre-True-epoch-400-batch-14-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal-up-upsampling-filters-256-red_factor-0.4-pyr_agg-sum',
+				'single-net-Unet-bone-efficientnetb2-pre-True-epoch-400-batch-14-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal-up-upsampling-filters-256-red_factor-0.4-pyr_agg-sum',
+				'single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-14-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal-up-upsampling-filters-256-red_factor-0.4-pyr_agg-sum']
 
 # model_names = ['single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8'
 # 			]
@@ -82,7 +71,6 @@ else:
 nb_filters = 256
 upsample = 'upsampling'
 ext_flag = False
-pyramid_agg = 'sum'
 for v in range(len(splits)):
 	if splits[v]=='set':
 		if splits[v+1] == 'dead':
@@ -109,8 +97,6 @@ for v in range(len(splits)):
 		nb_filters = int(splits[v+1])
 	elif splits[v] == 'ext':
 		ext_flag = True if splits[v+1] =='True' else False
-	elif splits[v] == 'pyr_agg':
-		pyramid_agg = splits[v+1]
 			
 DATA_DIR = '/data/datasets/{}'.format(dataset)
 x_train_dir = os.path.join(DATA_DIR, 'train_images') if not ext_flag else os.path.join(DATA_DIR, 'ext_train_images')
@@ -273,9 +259,8 @@ n_classes = len(CLASSES) + 1
 activation = 'softmax'
 net_func = globals()[net_arch]
 decoder_filters=(int(nb_filters),int(nb_filters/2), int(nb_filters/4), int(nb_filters/8), int(nb_filters/16))
-model = net_func(backbone, classes=n_classes, activation=activation, pyramid_aggregation = pyramid_agg)
-# model = net_func(backbone, classes=n_classes, activation=activation,\
-# 		decoder_block_type = upsample, decoder_filters = decoder_filters)
+model = net_func(backbone, classes=n_classes, activation=activation,\
+		decoder_block_type = upsample, decoder_filters = decoder_filters)
 # model = net_func(backbone, classes=n_classes, activation=activation)
 model.summary()
 #load best weights

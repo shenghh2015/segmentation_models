@@ -34,6 +34,7 @@ parser.add_argument("--pyramid_agg", type=str, default = 'sum')
 parser.add_argument("--filters", type=int, default = 256)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
+parser.add_argument("--bk", type=float, default = 0.5)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
@@ -41,9 +42,9 @@ parser.add_argument("--reduce_factor", type=float, default = 0.1)
 args = parser.parse_args()
 print(args)
 
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}'.format(args.net_type,\
+model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg)
+		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -305,7 +306,7 @@ else:
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
 
-class_weights = [1,1,1,0.5]
+class_weights = [1,1,1,args.bk]
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
 if args.loss =='focal+dice':
