@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import argparse
 import segmentation_models as sm
 from segmentation_models import Unet, Linknet, PSPNet, FPN
+import time
 
 from helper_function import precision, recall, f1_score, iou_calculate
 from sklearn.metrics import confusion_matrix
@@ -20,8 +21,9 @@ model_root_folder = '/data/models/report_results/'
 
 #model_name = 'livedead-net-Unet-bone-efficientnetb1-pre-True-epoch-300-batch-7-lr-0.0005-banl-False-dim-800-train-900-bk-0.5-one-False-rot-0.0-set-1664'
 # model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-7-lr-0.0005-down-True-dim-800-train-1100-bk-0.5-rot-0.0-set-1984'
-model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
+# model_name = 'cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice'
 # model_name = 'single-net-Unet-bone-efficientnetb3-pre-True-epoch-150-batch-4-lr-0.0005-dim-800-train-900-rot-0-set-cell_cycle_1984_v2-loss-focal+dice-up-transpose-filters-512'
+model_name = 'livedead-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-14-lr-0.0005-banl-False-dim-512-train-900-bk-0.5-one-True'
 model_folder = model_root_folder+model_name
 
 ## parse model name
@@ -270,8 +272,12 @@ test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 #     print("mean {}: {:.5}".format(metric.__name__, value))
 
 # calculate the pixel-level classification performance
+start_time = time.time()
 pr_masks = model.predict(test_dataloader); 
 pr_maps = np.argmax(pr_masks,axis=-1)
+end_time = time.time()
+time_cost = end_time - start_time
+print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
 
 gt_masks = []
 for i in range(len(test_dataset)):
