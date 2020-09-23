@@ -18,11 +18,11 @@ import glob
 from natsort import natsorted
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-model_root_folder = '/data/models/underfit_analysis/report_results/'
+model_root_folder = '/data/models/report_results/'
 nb_train_test = 200
 
 model_names = ['cellcycle-net-Unet-bone-efficientnetb2-pre-True-epoch-120-batch-3-lr-0.0005-down-True-dim-1024-train-1100-bk-0.5-rot-0-set-1984_v2-ext-True-fact-1-loss-focal+dice']
-index = 1
+index = 0
 model_name = model_names[index]
 print(model_name)
 model_folder = model_root_folder+model_name
@@ -217,7 +217,7 @@ def get_preprocessing(preprocessing_fn):
 	return A.Compose(_transform)
 
 # network
-best_weight = model_folder+'/model_best.h5'
+best_weight = model_folder+'/best_model.h5'
 CLASSES = []
 preprocess_input = sm.get_preprocessing(backbone)
 
@@ -256,79 +256,81 @@ generate_folder(result_dir)
 
 # evaluate model
 # subsets = ['val', 'train', 'test']
-subsets = ['test','train']
+# subsets = ['test','train']
 # subset = subsets[2]
-for subset in subsets:
-	print('processing subset :{}'.format(subset))
-	if subset == 'val':
-		x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
-	elif subset == 'train':
-		x_test_dir = x_train_dir; y_test_dir = y_train_dir
+subset = 'test'
+# for subset in subsets:
+print('processing subset :{}'.format(subset))
+if subset == 'val':
+	x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
+elif subset == 'train':
+	x_test_dir = x_train_dir; y_test_dir = y_train_dir
 
-	test_dataset = Dataset(
-		x_test_dir, 
-		y_test_dir, 
-		classes=CLASSES, 
-		augmentation=get_validation_augmentation(val_dim),
-		preprocessing=get_preprocessing(preprocess_input),
-	)
+test_dataset = Dataset(
+	x_test_dir, 
+	y_test_dir, 
+	classes=CLASSES, 
+	augmentation=get_validation_augmentation(val_dim),
+	preprocessing=get_preprocessing(preprocess_input),
+)
 
-	test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 
-	nb_test = nb_train_test if subset == 'train' else len(test_dataloader)
+nb_test = nb_train_test if subset == 'train' else len(test_dataloader)
 
-	random.seed(0)
-	test_indices = random.sample(range(len(test_dataloader)),nb_test)
+random.seed(0)
+test_indices = random.sample(range(len(test_dataloader)),nb_test)
 
-	# calculate the pixel-level classification performance
-	pr_masks = model.predict(test_dataloader)
+# calculate the pixel-level classification performance
+pr_masks = model.predict(test_dataloader)
 # 	pr_masks = []
 # 	for i in test_indices:
 # 		pr_masks.append(model.predict(test_dataset[i]))
 # 	pr_masks = np.stack(pr_masks)
-	pr_masks = pr_masks[test_indices,:]
-	pr_maps = np.argmax(pr_masks,axis=-1)
+pr_masks = pr_masks[test_indices,:]
+pr_maps = np.argmax(pr_masks,axis=-1)
 
-	gt_masks = []
-	for i in test_indices:
-		_, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-	gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
+gt_masks = []
+for i in test_indices:
+	_, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
+gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
 
-	## IoU and dice coefficient
-	iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_masks, pr_masks)
-	print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
-	print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+## calcualte tpr and fpr, fpr, and roc_auc
+from sklearn.metrics import roc_curve, auc
+classes = ['G1', 'S', 'G2', 'BK']
+tpr = dict(); fpr = dict(); thrs = dict(); roc_auc = dict();
+for i in range(len(classes)):
+	print('Class {}\n'.format(classes[i]))
+	y_pr = pr_masks[:,:,:,i].flatten()
+	y_true = gt_masks[:,:,:,i].flatten()
+	fpr[classes[i]], tpr[classes[i]], thrs[classes[i]] = roc_curve(y_true, y_pr)
+	roc_auc[classes[i]] = auc(fpr[classes[i]], tpr[classes[i]])
 
-	y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
-	cf_mat = confusion_matrix(y_true, y_pred)
-	cf_mat_reord = np.zeros(cf_mat.shape)
-	cf_mat_reord[1:,1:]=cf_mat[:3,:3];cf_mat_reord[0,1:]=cf_mat[3,0:3]; cf_mat_reord[1:,0]=cf_mat[0:3,3]
-	cf_mat_reord[0,0] = cf_mat[3,3]
-	print('Confusion matrix:')
-	print(cf_mat_reord)
-	prec_scores = []; recall_scores = []; f1_scores = []; iou_scores=[]
-	for i in range(cf_mat.shape[0]):
-		prec_scores.append(precision(i,cf_mat_reord))
-		recall_scores.append(recall(i,cf_mat_reord))
-		f1_scores.append(f1_score(i,cf_mat_reord))
-	print('Precision:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
-	print('Recall:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
-	# f1 score
-	print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-	print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
-	with open(result_dir+'/{}_summary.txt'.format(subset), 'w+') as f:
-		# save iou and dice
-		f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}\n'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
-		f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}\n'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
-		# save confusion matrix
-		f.write('confusion matrix:\n')
-		np.savetxt(f, cf_mat_reord, fmt='%-7d')
-		# save precision
-		f.write('precision:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
-		f.write('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
-		# save recall
-		f.write('recall:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
-		f.write('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
-		# save f1-score
-		f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-		f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
+## plot ROC curves for each classes
+def plot_roc_curves(file_name, fpr, tpr, roc_auc, classes = ['G1', 'S', 'G2', 'BK'], bk = True):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 1,1,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	font_size = 15
+	ax.plot(fpr[classes[0]], tpr[classes[0]]); ax.plot(fpr[classes[1]], tpr[classes[1]]); ax.plot(fpr[classes[2]], tpr[classes[2]]);
+	if bk:
+		ax.plot(fpr[classes[3]], tpr[classes[3]])
+		ax.legend([classes[0]+'(AUC:{:.2f})'.format(roc_auc[classes[0]]),
+				   classes[1]+'(AUC:{:.2f})'.format(roc_auc[classes[1]]),
+				   classes[2]+'(AUC:{:.2f})'.format(roc_auc[classes[2]]),
+				   classes[3]+'(AUC:{:.2f})'.format(roc_auc[classes[3]])], fontsize = font_size)
+	else:
+		ax.legend([classes[0]+'(AUC:{:.2f})'.format(roc_auc[classes[0]]),
+				   classes[1]+'(AUC:{:.2f})'.format(roc_auc[classes[1]]),
+				   classes[2]+'(AUC:{:.2f})'.format(roc_auc[classes[2]])], fontsize = font_size)
+	ax.set_ylabel('True postive fraction', fontsize = font_size)
+	ax.set_xlabel('False postive fraction', fontsize = font_size)
+	ax.set_xlim([0.0,1.0])
+	ax.set_ylim([0.0,1.0])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
+file_name = result_dir + '/roc_curve_bk.png'
+plot_roc_curves(file_name, fpr, tpr, roc_auc, classes = ['G1', 'S', 'G2', 'BK'], bk = True)
+file_name = result_dir + '/roc_curve.png'
+plot_roc_curves(file_name, fpr, tpr, roc_auc, classes = ['G1', 'S', 'G2', 'BK'], bk = False)
