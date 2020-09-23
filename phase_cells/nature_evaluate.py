@@ -365,5 +365,5 @@ with open(result_dir+'/{}_summary.txt'.format(subset), 'w+') as f:
 	# save f1-score
 	f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
 	f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
-	f.write('inference time: {}s per image'.format(time_cost))
+	f.write('inference time: {:.4f}s per image'.format(time_cost))
 	
