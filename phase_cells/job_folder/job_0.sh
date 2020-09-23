@@ -1,2 +1,2 @@
-eval_train_val_test.py
+python eval_train_val_test.py
 

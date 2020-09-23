@@ -305,4 +305,4 @@
 # JOB: python single_train_v3.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 2 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --pyramid_agg sum --bk 1.0
 # JOB: python single_train_v3.py --net_type FPN --backbone efficientnetb3 --pre_train True --batch_size 1 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --pyramid_agg sum --bk 1.0
 
-JOB: python eval_train_val_test.py
+JOB: python nature_evaluate.py
