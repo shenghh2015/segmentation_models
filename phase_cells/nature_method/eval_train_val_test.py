@@ -31,7 +31,7 @@ print(args)
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 index = args.model_index
 subset = args.subset
-model_root_folder = '/data/models/'
+model_root_folder = '/data/models/report_results/'
 nb_train_test = 200
 
 model_names = ['livedead-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-14-lr-0.0005-banl-False-dim-512-train-900-bk-0.5-one-True']
