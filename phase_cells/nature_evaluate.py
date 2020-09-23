@@ -317,6 +317,30 @@ if test_time:
 	end_time = time.time()
 	time_cost = end_time - start_time
 	print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
+	start_time = time.time()
+	pr_masks = model.predict(test_dataloader)
+	pr_maps = np.argmax(pr_masks,axis=-1)
+	end_time = time.time()
+	time_cost = end_time - start_time
+	print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
+	start_time = time.time()
+	pr_masks = model.predict(test_dataloader)
+	pr_maps = np.argmax(pr_masks,axis=-1)
+	end_time = time.time()
+	time_cost = end_time - start_time
+	print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
+	start_time = time.time()
+	pr_masks = model.predict(test_dataloader)
+	pr_maps = np.argmax(pr_masks,axis=-1)
+	end_time = time.time()
+	time_cost = end_time - start_time
+	print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
+	start_time = time.time()
+	pr_masks = model.predict(test_dataloader)
+	pr_maps = np.argmax(pr_masks,axis=-1)
+	end_time = time.time()
+	time_cost = end_time - start_time
+	print('time cost: {:.4f} s per image'.format(time_cost/len(test_dataset)))
 # calculate the pixel-level classification performance
 pr_masks = model.predict(test_dataloader)
 pr_masks = pr_masks[test_indices,:]

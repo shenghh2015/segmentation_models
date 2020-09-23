@@ -1,2 +1,2 @@
-python eval_train_val_test.py
+python nature_evaluate.py
 
