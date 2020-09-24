@@ -314,9 +314,9 @@ def plot_roc_curves(file_name, fpr, tpr, roc_auc, classes = ['G1', 'S', 'G2', 'B
 	rows, cols, size = 1,1,5
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	font_size = 15
-	ax.plot(fpr[classes[0]], tpr[classes[0]]); ax.plot(fpr[classes[1]], tpr[classes[1]]); ax.plot(fpr[classes[2]], tpr[classes[2]]);
+	ax.plot(fpr[classes[0]], tpr[classes[0]], '--', linewidth = 2); ax.plot(fpr[classes[1]], tpr[classes[1]], '-', linewidth = 2); ax.plot(fpr[classes[2]], tpr[classes[2]], '-', linewidth = 2);
 	if bk:
-		ax.plot(fpr[classes[3]], tpr[classes[3]])
+		ax.plot(fpr[classes[3]], tpr[classes[3]], '--', linewidth = 2)
 		ax.legend([classes[0]+'(AUC:{:.2f})'.format(roc_auc[classes[0]]),
 				   classes[1]+'(AUC:{:.2f})'.format(roc_auc[classes[1]]),
 				   classes[2]+'(AUC:{:.2f})'.format(roc_auc[classes[2]]),
