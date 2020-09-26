@@ -305,4 +305,34 @@
 # JOB: python single_train_v3.py --net_type FPN --backbone efficientnetb2 --pre_train True --batch_size 2 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --pyramid_agg sum --bk 1.0
 # JOB: python single_train_v3.py --net_type FPN --backbone efficientnetb3 --pre_train True --batch_size 1 --dim 1024 --epoch 400 --lr 5e-4 --dataset cell_cycle_1984_v2 --ext True --train 1100 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --pyramid_agg sum --bk 1.0
 
-JOB: python nature_evaluate.py
+# JOB: python nature_evaluate.py
+
+# JOB: python single_train_v3.py --net_type Unet --backbone vgg16 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone vgg19 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone resnet18 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone resnet34 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnet34 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnet50 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnet101 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnet152 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+
+# JOB: python single_train_v3.py --net_type Unet --backbone resnext50 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone resnext101 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnext50 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone seresnext101 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+
+# JOB: python single_train_v3.py --net_type Unet --backbone senet154 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone densenet121 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone densenet201 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone inceptionv3 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+
+# JOB: python single_train_v3.py --net_type Unet --backbone inceptionresnetv2 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone mobilenet --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone mobilenetv2 --pre_train True --batch_size 14 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+# JOB: python single_train_v3.py --net_type Unet --backbone senet154 --pre_train True --batch_size 4 --dim 512 --epoch 400 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+
+JOB: python single_train_v3.py --net_type Unet --backbone resnet50 --pre_train True --batch_size 10 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 0 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+JOB: python single_train_v3.py --net_type Unet --backbone resnet101 --pre_train True --batch_size 8 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 1 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+JOB: python single_train_v3.py --net_type Unet --backbone resnet152 --pre_train True --batch_size 8 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 2 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
+JOB: python single_train_v3.py --net_type Unet --backbone seresnet18 --pre_train True --batch_size 14 --dim 512 --epoch 200 --lr 5e-4 --dataset live_dead --ext False --train 900 --gpu 3 --loss focal --filters 256 --upsample upsampling --reduce_factor 0.8 --bk 1.0
