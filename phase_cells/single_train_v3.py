@@ -35,6 +35,7 @@ parser.add_argument("--filters", type=int, default = 256)
 parser.add_argument("--rot", type=float, default = 0)
 parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--bk", type=float, default = 0.5)
+parser.add_argument("--focal_weight", type=float, default = 1)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
@@ -42,9 +43,9 @@ parser.add_argument("--reduce_factor", type=float, default = 0.1)
 args = parser.parse_args()
 print(args)
 
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}'.format(args.net_type,\
+model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk)
+		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -312,7 +313,7 @@ class_weights = [1,1,1,args.bk]
 if args.loss =='focal+dice':
 	dice_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
-	total_loss = dice_loss + (1 * focal_loss)
+	total_loss = dice_loss + (args.focal_weight * focal_loss)
 elif args.loss =='dice':
 	total_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
 elif args.loss =='jaccard':
@@ -320,16 +321,16 @@ elif args.loss =='jaccard':
 elif args.loss =='focal+jaccard':
 	dice_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
-	total_loss = dice_loss + (1 * focal_loss)
+	total_loss = dice_loss + (args.focal_weight * focal_loss)
 elif args.loss =='focal+jaccard+dice':
 	dice_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
 	jaccard_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
-	total_loss = dice_loss + jaccard_loss+ (1 * focal_loss)
+	total_loss = dice_loss + jaccard_loss+ (args.focal_weight * focal_loss)
 elif args.loss == 'focal':
 	total_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 # 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
-# 	total_loss = dice_loss + (1 * focal_loss)
+# 	total_loss = dice_loss + (args.forcal_weight * focal_loss)
 # actulally total_loss can be imported directly from library, above example just show you how to manipulate with losses
 # total_loss = sm.losses.binary_focal_dice_loss # or sm.losses.categorical_focal_dice_loss 
 
