@@ -229,11 +229,11 @@ def Unet(
     )
 
     if encoder_features == 'default':
-		if feature_version and 'efficientnetb' in backbone_name:
-			print('Feature version: {}'.format(feature_version))
-			encoder_features = Backbones.get_feature_layers(backbone_name+'_v{}'.format(feature_version), n=4)
-		else:
-	    	encoder_features = Backbones.get_feature_layers(backbone_name, n=4)
+        if feature_version and 'efficientnetb' in backbone_name:
+            print('Feature version: {}'.format(feature_version))
+            encoder_features = Backbones.get_feature_layers(backbone_name+'_v{}'.format(feature_version), n=4)
+        else:
+            encoder_features = Backbones.get_feature_layers(backbone_name, n=4)
 
     model = build_unet(
         backbone=backbone,

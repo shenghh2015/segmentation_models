@@ -298,7 +298,7 @@ elif args.net_type == 'FPN':
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = args.pyramid_agg) 
 else:
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation,\
-    		decoder_block_type = args.upsample,feature_version = args.feat_version\
+    		decoder_block_type = args.upsample, feature_version = args.feat_version,\
     		decoder_filters=(int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16)))
     print('{}'.format((int(args.filters),int(args.filters/2), int(args.filters/4), int(args.filters/8), int(args.filters/16))))
 # else:
@@ -414,7 +414,7 @@ test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 if args.net_type == 'FPN':
     model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = args.pyramid_agg)
 else:
-	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation)
+	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation, feature_version = args.feat_version,)
 model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
 
 # load best weights
