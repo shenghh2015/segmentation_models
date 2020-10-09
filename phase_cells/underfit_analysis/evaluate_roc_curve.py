@@ -306,6 +306,56 @@ for i in range(len(classes)):
 	fpr[classes[i]], tpr[classes[i]], thrs[classes[i]] = roc_curve(y_true, y_pr)
 	roc_auc[classes[i]] = auc(fpr[classes[i]], tpr[classes[i]])
 
+## decide the threshold by min(tpr - fpr)
+tpr_cls = dict(); fpr_cls = dict(); thres_cls = dict()
+for i in range(len(classes)):
+	thr_index = np.argmax(tpr[classes[i]]-fpr[classes[i]])
+	thres_cls[classes[i]] = thrs[classes[i]][thr_index]
+	tpr_cls[classes[i]] = tpr[classes[i]][thr_index]
+	fpr_cls[classes[i]] = fpr[classes[i]][thr_index]
+print(thres_cls); print(tpr_cls); print(fpr_cls)
+
+pr_maps_roc = []
+for i in range(pr_masks.shape[0]):
+	pr_map_cls = [(pr_masks[i,:,:,k]>thres_cls[key]) for k, key in enumerate(thres_cls.keys())]
+	pr_map = pr_map_cls[0]*1.0
+	for k in range(1,len(classes)):
+		top = pr_map_cls[k].copy()*(k+1)
+		top[np.where(np.logical_and(top>0,pr_map>0))]= pr_map[np.where(np.logical_and(top>0,pr_map>0))]
+		pr_map[np.where(top>0)] = top[np.where(top>0)]
+	pr_maps_roc.append(pr_map)
+pr_maps_roc = np.stack(pr_maps_roc)
+pr_masks_roc = np.stack([pr_maps_roc == k for k in range(1,len(classes)+1)],axis =-1)
+## IoU and dice coefficient
+iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_masks, pr_masks_roc)
+print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
+print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+
+def plot(file_name, pr_masks, pr_masks_roc, gt_masks, index, classes = ['G1', 'S', 'G2', 'BK']):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 3,4,4.5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	font_size = 15
+	ax[0,0].imshow(gt_masks[index,:,:,0]); ax[0,1].imshow(gt_masks[index,:,:,1])
+	ax[0,2].imshow(gt_masks[index,:,:,2]); ax[0,3].imshow(gt_masks[index,:,:,3])
+	ax[1,0].imshow(pr_masks[index,:,:,0]); ax[1,1].imshow(pr_masks[index,:,:,1])
+	ax[1,2].imshow(pr_masks[index,:,:,2]); ax[1,3].imshow(pr_masks[index,:,:,3])
+	ax[2,0].imshow(pr_masks_roc[index,:,:,0]); ax[2,1].imshow(pr_masks_roc[index,:,:,1])
+	ax[2,2].imshow(pr_masks_roc[index,:,:,2]); ax[2,3].imshow(pr_masks_roc[index,:,:,3])
+	ax[0,0].set_title(classes[0]); ax[0,1].set_title(classes[1]); ax[0,2].set_title(classes[2])
+	ax[0,3].set_title(classes[3])
+	ax[0,0].set_ylabel('Ground Truth')	
+	ax[1,0].set_ylabel('Probability')
+	ax[2,0].set_ylabel('Prediction')
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
+pred_dir = '/data/eval_train_val_test/'
+for i in range(10):
+	file_name = pred_dir+'{}.png'.format(i)
+	plot(file_name, pr_masks, pr_masks_roc, gt_masks, i)
+
 ## plot ROC curves for each classes
 def plot_roc_curves(file_name, fpr, tpr, roc_auc, classes = ['G1', 'S', 'G2', 'BK'], bk = True):
 	import matplotlib.pyplot as plt

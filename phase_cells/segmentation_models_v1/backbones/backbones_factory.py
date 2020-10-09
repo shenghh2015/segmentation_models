@@ -70,6 +70,24 @@ class BackbonesFactory(ModelsFactory):
         'efficientnetb7': ('block6a_expand_activation', 'block4a_expand_activation',
                            'block3a_expand_activation', 'block2a_expand_activation'),
 
+        # EfficientNets
+        'efficientnetb0_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb1_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb2_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb3_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb4_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb5_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb6_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+        'efficientnetb7_v1': ('block5a_project_bn', 'block3a_project_bn',
+                           'block2a_project_bn', 'block1a_project_bn'),
+
     }
 
     _models_update = {

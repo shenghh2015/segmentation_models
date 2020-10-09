@@ -36,6 +36,8 @@ nb_train_test = 200
 
 model_names = ['livedead-net-Unet-bone-efficientnetb3-pre-True-epoch-200-batch-14-lr-0.0005-banl-False-dim-512-train-900-bk-0.5-one-True']
 
+#model_names = ['single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-14-lr-0.0005-dim-512-train-900-rot-0-set-live_dead-ext-False-loss-focal-up-upsampling-filters-256-red_factor-0.8-pyr_agg-sum']
+
 # model_names = ['single-net-Unet-bone-efficientnetb3-pre-True-epoch-400-batch-2-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.8'
 # 			]
 # model_names = ['single-net-Unet-bone-efficientnetb2-pre-True-epoch-200-batch-3-lr-0.0005-dim-1024-train-1100-rot-0-set-cell_cycle_1984_v2-ext-True-loss-focal+dice-up-upsampling-filters-256-red_factor-0.2',

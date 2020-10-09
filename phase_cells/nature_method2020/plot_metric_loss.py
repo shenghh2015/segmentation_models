@@ -2,19 +2,6 @@ import numpy as np
 import os
 import sys
 
-def plot_history(file_name, loss_list, metric_list, title_list):
-	import matplotlib.pyplot as plt
-	from matplotlib.backends.backend_agg import FigureCanvasAgg
-	from matplotlib.figure import Figure
-	rows, cols, size = 1,2,5
-	font_size = 15
-	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
-	ax[0].plot(loss_list[0]);ax[0].plot(loss_list[1])
-	ax[0].set_ylabel(title_list[0], fontsize = font_size);ax[0].set_xlabel('Epochs',fontsize = font_size);ax[0].legend(['train','valid'],fontsize = font_size)
-	ax[1].plot(metric_list[0]);ax[1].plot(metric_list[1])
-	ax[1].set_ylabel(title_list[1],fontsize = font_size);ax[1].set_xlabel('Epochs',fontsize = font_size);ax[1].legend(['train','valid'],fontsize = font_size)
-	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=100)
-
 def plot_separate(file_name, loss_list, title_list):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
