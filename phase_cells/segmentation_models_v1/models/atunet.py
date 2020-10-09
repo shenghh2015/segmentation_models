@@ -26,6 +26,40 @@ def get_submodules():
 # ---------------------------------------------------------------------
 #  Blocks
 # ---------------------------------------------------------------------
+def expend_as(tensor, rep):
+    my_repeat = layers.Lambda(lambda x, repnum: backend.repeat_elements(x, repnum, axis=3), arguments={'repnum': rep})(tensor)
+    return my_repeat
+
+def AttnGatingBlock(x, g, inter_shape):
+    shape_x = backend.int_shape(x) 
+    shape_g = backend.int_shape(g)
+    print(shape_x, shape_g)
+
+    theta_x = layers.Conv2D(filters=inter_shape, kernel_size=(1, 1), padding='same')(x)
+    phi_g = layers.Conv2D(filters=inter_shape, kernel_size=(1, 1), padding='same')(g)
+    print(backend.int_shape(theta_x), backend.int_shape(phi_g) )
+
+    concat_xg = layers.Add()([phi_g, theta_x])
+    act_xg = layers.Activation('relu')(concat_xg)
+    psi = layers.Conv2D(filters=1, kernel_size=(1, 1),padding='same')(act_xg)
+    sigmoid_xg = layers.Activation('sigmoid')(psi)
+    upsample_psi = expend_as(sigmoid_xg, shape_x[3])
+
+    y = layers.Multiply()([upsample_psi, x])
+
+    result = layers.Conv2D(filters=shape_x[3],kernel_size=(1, 1), padding='same')(y)
+    result_bn = layers.BatchNormalization()(result)
+    print(backend.int_shape(result_bn)); print('-----')
+    
+    return theta_x
+
+# def UnetGatingSignal(input, is_batchnorm=False):
+#     shape = backend.int_shape(input)
+#     x = layers.Conv2D(shape[3] * 2, (1, 1), strides=(1, 1), padding="same")(input)
+#     if is_batchnorm:
+#         x = layers.BatchNormalization()(x)
+#     x = layers.Activation('relu')(x)
+#     return x
 
 def Conv3x3BnReLU(filters, use_batchnorm, name=None):
     kwargs = get_submodules()
@@ -57,11 +91,12 @@ def DecoderUpsamplingX2Block(filters, stage, use_batchnorm=False):
         x = layers.UpSampling2D(size=2, name=up_name)(input_tensor)
 
         if skip is not None:
-            print(backend.int_shape(skip),backend.int_shape(x))
-            x = layers.Concatenate(axis=concat_axis, name=concat_name)([x, skip])
+            attn = AttnGatingBlock(skip, x, filters)
+            x = layers.Concatenate(axis=concat_axis, name=concat_name)([x, attn])
 
         x = Conv3x3BnReLU(filters, use_batchnorm, name=conv1_name)(x)
         x = Conv3x3BnReLU(filters, use_batchnorm, name=conv2_name)(x)
+        #print(backend.int_shape(x))
 
         return x
 
@@ -101,7 +136,6 @@ def DecoderTransposeX2Block(filters, stage, use_batchnorm=False):
         return x
 
     return layer
-
 
 # ---------------------------------------------------------------------
 #  Unet Decoder
@@ -160,7 +194,7 @@ def build_unet(
 #  Unet Model
 # ---------------------------------------------------------------------
 
-def Unet(
+def AtUnet(
         backbone_name='vgg16',
         input_shape=(None, None, 3),
         classes=1,
@@ -233,8 +267,9 @@ def Unet(
         if feature_version and 'efficientnetb' in backbone_name:
             print('Feature version: {}'.format(feature_version))
             encoder_features = Backbones.get_feature_layers(backbone_name+'_v{}'.format(feature_version), n=4)
+            print(encoder_features)
         else:
-            encoder_features = Backbones.get_feature_layers(backbone_name, n=4)
+            encoder_features = Backbones.get_feature_layers(backbone_name, n=4); #print(encoder_features)
 
     model = build_unet(
         backbone=backbone,
