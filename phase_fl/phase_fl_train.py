@@ -7,12 +7,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+from natsort import natsorted
 # sys.path.append('../')
 import segmentation_models_v1 as sm
-from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
+from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet
 sm.set_framework('tf.keras')
 
-from helper_function import plot_history_flu, plot_flu_prediction
+from helper_function import plot_history_flu, plot_flu_prediction, plot_set_prediction
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from sklearn.metrics import confusion_matrix
 
@@ -27,43 +28,51 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
-parser.add_argument("--backbone", type=str, default = 'resnet34')
-parser.add_argument("--dataset", type=str, default = 'cell_cycle_1984')
-parser.add_argument("--filtered", type=str2bool, default = False)  # Filtered fluorescent or not 
-parser.add_argument("--channels", type=str, default = 'fl1')
-parser.add_argument("--ext", type=str2bool, default = False)
-parser.add_argument("--epoch", type=int, default = 300)
+parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
+parser.add_argument("--dataset", type=str, default = 'bead_dataset')
+parser.add_argument("--epoch", type=int, default = 10)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
-parser.add_argument("--flu_scale", type=float, default = 1.0)
+parser.add_argument("--scale", type=float, default = 100)
 parser.add_argument("--train", type=int, default = None)
-parser.add_argument("--act_fun", type=str, default = 'sigmoid')
+parser.add_argument("--act_fun", type=str, default = 'relu')
 parser.add_argument("--loss", type=str, default = 'mse')
-parser.add_argument("--batch_size", type=int, default = 2)
-parser.add_argument("--lr", type=float, default = 1e-3)
+parser.add_argument("--batch_size", type=int, default = 6)
+parser.add_argument("--lr", type=float, default = 5e-4)
+parser.add_argument("--decay", type=float, default = 0.8)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'cellcycle_flu-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-fted-{}-loss-{}-act-{}-ch-{}-flu_scale-{}-ext-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train,args.rot, '_'.join(args.dataset.split('_')[2:]), args.filtered, args.loss, args.act_fun, args.channels, args.flu_scale, args.ext)
+model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-act-{}-scale-{}-decay-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.loss, args.act_fun, args.scale, args.decay)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
-train_dim = args.dim; val_dim = 1984
+train_dim = args.dim
 
-fluor_header = 'f' if not args.filtered else 'ff'
+if args.dataset == 'bead_dataset':
+	x_train_dir = os.path.join(DATA_DIR, 'train_phase')
+	y_train_dir = os.path.join(DATA_DIR, 'train_fl')
 
-x_train_dir = os.path.join(DATA_DIR, 'train_images') if not args.ext else os.path.join(DATA_DIR, 'ext_train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_{}masks'.format(fluor_header)) if not args.ext else os.path.join(DATA_DIR, 'ext_train_{}masks'.format(fluor_header))
+	x_valid_dir = os.path.join(DATA_DIR, 'test_phase')
+	y_valid_dir = os.path.join(DATA_DIR, 'test_fl')
 
-x_valid_dir = os.path.join(DATA_DIR, 'val_images')
-y_valid_dir = os.path.join(DATA_DIR, 'val_{}masks'.format(fluor_header))
+	x_test_dir = x_valid_dir
+	y_test_dir = y_valid_dir
+	val_dim = 608
+else:
+	x_train_dir = os.path.join(DATA_DIR, 'train/phase')
+	y_train_dir = os.path.join(DATA_DIR, 'train/fl')
 
-x_test_dir = os.path.join(DATA_DIR, 'test_images')
-y_test_dir = os.path.join(DATA_DIR, 'test_{}masks'.format(fluor_header))
+	x_valid_dir = os.path.join(DATA_DIR, 'valid/phase')
+	y_valid_dir = os.path.join(DATA_DIR, 'valid/fl')
+
+	x_test_dir = os.path.join(DATA_DIR, 'test/phase')
+	y_test_dir = os.path.join(DATA_DIR, 'test/fl')
+	val_dim = 896
 
 print(y_train_dir)
 
@@ -86,15 +95,13 @@ class Dataset:
             self, 
             images_dir, 
             masks_dir,
-            flu_scale = 1.0,
-            channels=None,
-            classes=None,
+            scale = 1.0,
             nb_data=None,
             augmentation=None, 
             preprocessing=None,
     ):
         #self.ids = os.listdir(images_dir)
-        id_list = os.listdir(images_dir)
+        id_list = natsorted(os.listdir(images_dir))
         if nb_data ==None:
             self.ids = id_list
         else:
@@ -102,10 +109,7 @@ class Dataset:
         self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
         print(len(self.images_fps)); print(len(self.masks_fps))        
-        # convert str names to class values on masks
-        self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
-        self.channels = channels
-        self.flu_scale = flu_scale
+        self.scale = scale
         self.augmentation = augmentation
         self.preprocessing = preprocessing
     
@@ -116,8 +120,8 @@ class Dataset:
 #         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 #         mask = cv2.imread(self.masks_fps[i], cv2.COLOR_BGR2RGB)
         image = io.imread(self.images_fps[i])
-        mask = io.imread(self.masks_fps[i])
-        mask = mask/255.*self.flu_scale
+        mask  = io.imread(self.masks_fps[i])
+        mask = mask/255.*self.scale
         
 	    # apply augmentations
         if self.augmentation:
@@ -129,13 +133,7 @@ class Dataset:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
 
-        if self.channels == 'fl1':
-            output_mask = mask[:,:,:1]
-        elif self.channels == 'fl2':
-            output_mask = mask[:,:,1:-1]
-        else:
-            output_mask = mask[:,:,:-1]
-        return image, output_mask
+        return image, mask
         
     def __len__(self):
         return len(self.ids)
@@ -258,15 +256,13 @@ def get_preprocessing(preprocessing_fn):
 # BACKBONE = 'efficientnetb3'
 BACKBONE = args.backbone
 BATCH_SIZE = args.batch_size
-CLASSES = ['g1', 's', 'g2']
 LR = args.lr
 EPOCHS = args.epoch
 
 preprocess_input = sm.get_preprocessing(BACKBONE)
 
 # define network parameters
-# n_classes = 1 if len(CLASSES) == 1 else (len(CLASSES) + 1)  # case for binary and multiclass segmentation
-n_classes = 2 if args.channels =='combined' else 1
+n_classes = 3
 activation = '{}'.format(args.act_fun)
 
 #create model
@@ -275,7 +271,6 @@ net_func = globals()[args.net_type]
 encoder_weights='imagenet' if args.pre_train else None
 
 model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
-# model = sm.Unet(BACKBONE, classes=n_classes, activation=activation)
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
@@ -285,8 +280,7 @@ if args.loss == 'mse':
 elif args.loss == 'mae':
 	loss = tf.keras.losses.MAE
 
-# metrics = [sm.metrics.PSNR(max_val=1.0), sm.metrics.Pearson()]
-metrics = [sm.metrics.PSNR(max_val=args.flu_scale)]
+metrics = [sm.metrics.PSNR(max_val=args.scale)]
 
 # compile keras model with defined optimozer, loss and metrics
 model.compile(optim, loss, metrics)
@@ -295,9 +289,7 @@ model.compile(optim, loss, metrics)
 train_dataset = Dataset(
     x_train_dir, 
     y_train_dir,
-    flu_scale = args.flu_scale,
-    channels = args.channels, 
-    classes=[],
+    scale = args.scale,
     nb_data=args.train, 
     augmentation=get_training_augmentation(train_dim, args.rot),
     preprocessing=get_preprocessing(preprocess_input),
@@ -307,9 +299,7 @@ train_dataset = Dataset(
 valid_dataset = Dataset(
     x_valid_dir, 
     y_valid_dir,
-    flu_scale = args.flu_scale,
-    channels = args.channels,  
-    classes=[], 
+    scale = args.scale,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
@@ -322,14 +312,14 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, train_dim, train_dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_classes)
 
-model_folder = '/data/models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
+model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
 generate_folder(model_folder)
 
 
 # define callbacks for learning rate scheduling and best checkpoints saving
 callbacks = [
     tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
-    tf.keras.callbacks.ReduceLROnPlateau(),
+    tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
 ]
 
 # train model
@@ -349,9 +339,7 @@ plot_history_flu(model_folder+'/train_history.png',history)
 test_dataset = Dataset(
     x_test_dir, 
     y_test_dir,
-    flu_scale = args.flu_scale,
-    channels = args.channels, 
-    classes=[], 
+    scale = args.scale,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
@@ -372,33 +360,27 @@ for i in range(len(test_dataset)):
 images = np.stack(images); gt_masks = np.stack(gt_masks)
 
 # scale back from args.flu_scale
-gt_masks = gt_masks/args.flu_scale
-pr_masks = pr_masks/args.flu_scale
+gt_masks = np.uint8(gt_masks/args.scale*255)
+pr_masks = pr_masks/scale*255
+pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
 
-# create fake 2 channels if there is only one channel
-if not args.channels == 'combined':
-	gt_masks = np.concatenate([gt_masks, gt_masks], axis = -1)
-	pr_masks = np.concatenate([pr_masks, pr_masks], axis = -1)
 # save prediction examples
-plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 5
+plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 10
 plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
-
+# output_dir = model_folder+'/pred_fl'; generate_folder(output_dir)
+# plot_set_prediction(output_dir, images, gt_masks, pr_masks)
 # calculate PSNR
-f1_mPSNR, f1_psnr_scores = calculate_psnr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
-f2_mPSNR, f2_psnr_scores = calculate_psnr(gt_masks[:,:,:,1], pr_masks[:,:,:,1])
-mPSNR, f_psnr_scores = calculate_psnr(gt_masks, pr_masks)
-print('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPSNR, f2_mPSNR, mPSNR))
+mPSNR, psnr_scores = calculate_psnr(gt_masks, pr_masks)
+print('PSNR: {:.4f}'.format(mPSNR))
 
 # calculate Pearson correlation coefficient
-f1_mPear, f1_pear_scores = calculate_pearsonr(gt_masks[:,:,:,0], pr_masks[:,:,:,0])
-f2_mPear, f2_pear_scores = calculate_pearsonr(gt_masks[:,:,:,1], pr_masks[:,:,:,1])
-f_mPear, f_pear_scores = calculate_pearsonr(gt_masks, pr_masks)
-print('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}'.format(f1_mPear, f2_mPear, f_mPear))
+mPear, pear_scores = calculate_pearsonr(gt_masks, pr_masks)
+print('Pearsonr:{:.4f}'.format(mPear))
 
 with open(model_folder+'/metric_summary.txt','w+') as f:
 	# average psnr
 	for metric, value in zip(metrics, scores[1:]):
 		f.write("mean {}: {:.5}\n".format(metric.__name__, value))
 	# save PSNR over fluorescent 1 and fluorescent 2
-	f.write('PSNR: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPSNR, f2_mPSNR, mPSNR))
-	f.write('Pearsonr: fluo1 {:.4f}, fluo2 {:.4f}, combined {:.4f}\n'.format(f1_mPear, f2_mPear, f_mPear))
+	f.write('PSNR: {:.4f}\n'.format(mPSNR))
+	f.write('Pearsonr:{:.4f}\n'.format(mPear))

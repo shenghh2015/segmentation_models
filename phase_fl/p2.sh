@@ -1,0 +1,1 @@
+python phase_fl_train.py --net_type AtUnet --backbone efficientnetb0 --dataset bead_dataset --epoch 200 --dim 512 --loss mae --batch_size 6 --lr 5e-4 --pre_train True --gpu 2

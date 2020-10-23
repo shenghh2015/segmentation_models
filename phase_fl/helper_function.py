@@ -56,6 +56,7 @@ def plot_history_flu(file_name, history):
 	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
 
+## for only 3-channel output
 def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_seed = 3):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -65,25 +66,42 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_see
 	random.seed(seed)
 	font_size = 24
 	indices = random.sample(range(gt_maps.shape[0]),nb_images)
+# 	indices = [124,125,126,128,129]
 	rows, cols, size = nb_images,4,5
 	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
 	for i in range(len(indices)):
 		idx = indices[i]
 		image, gt_map, pr_map = images[idx,:].squeeze(), gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
 		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
-		err_map = np.sum(np.abs(gt_map-pr_map),axis=-1)
-		gt_map_rgb = np.zeros(image.shape,dtype=np.uint8); # gt_map_rgb[:,:,:-1]=np.uint8((gt_map-gt_map.min())/(gt_map.max()-gt_map.min())*255)
-		gt_map_rgb[:,:,:-1]=np.uint8(gt_map*255)
-		pr_map_rgb = np.zeros(image.shape,dtype=np.uint8); # pr_map_rgb[:,:,:-1]=np.uint8((pr_map-pr_map.min())/(pr_map.max()-pr_map.min())*255)
-		pr_map_rgb[:,:,:-1]=np.uint8(pr_map*255)
-		ax[i,0].imshow(image[::4,::4,:]); ax[i,1].imshow(gt_map_rgb[::4,::4,:]); 
-		ax[i,2].imshow(pr_map_rgb[::4,::4,:]); ax[i,3].imshow(err_map[::4,::4], cmap='Blues')
+		err_map = np.abs(gt_map-pr_map)
+		ax[i,0].imshow(image); ax[i,1].imshow(gt_map); 
+		ax[i,2].imshow(pr_map); ax[i,3].imshow(err_map, cmap='Blues')
 		ax[i,0].set_xticks([]);ax[i,1].set_xticks([]);ax[i,2].set_xticks([]);ax[i,3].set_xticks([])
 		ax[i,0].set_yticks([]);ax[i,1].set_yticks([]);ax[i,2].set_yticks([]);ax[i,3].set_yticks([])
 		if i == 0:
 			ax[i,0].set_title('Image',fontsize=font_size); ax[i,1].set_title('GT',fontsize=font_size); 
 			ax[i,2].set_title('Pred',fontsize=font_size); ax[i,3].set_title('Err Map',fontsize=font_size); 
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=60)
+
+## for only 3-channel output
+def plot_set_prediction(output_dir, images, gt_maps, pr_maps):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	font_size = 24
+	rows, cols, size = 1,4,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	for index in range(images.shape[0]):
+		image, gt_map, pr_map = images[index,:].squeeze(), gt_maps[index,:].squeeze(), pr_maps[index,:].squeeze()
+		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
+		err_map = np.abs(gt_map-pr_map)
+		ax[0].imshow(image); ax[1].imshow(gt_map); 
+		ax[2].imshow(pr_map); ax[3].imshow(err_map, cmap='Blues')
+		ax[0].set_xticks([]);ax[1].set_xticks([]);ax[2].set_xticks([]);ax[3].set_xticks([])
+		ax[0].set_yticks([]);ax[1].set_yticks([]);ax[2].set_yticks([]);ax[3].set_yticks([])
+		ax[0].set_title('Image',fontsize=font_size); ax[1].set_title('GT',fontsize=font_size)
+		ax[2].set_title('Pred',fontsize=font_size); ax[3].set_title('Err Map',fontsize=font_size)
+		canvas = FigureCanvasAgg(fig); canvas.print_figure(output_dir+'/pred_{}.png'.format(index), dpi=60)
 
 def plot_map_prediction(file_name, images, gt_maps, pr_maps, nb_images):
 	import matplotlib.pyplot as plt
@@ -174,7 +192,7 @@ def calculate_psnr(imgs1, imgs2):
 		axis_tuple = (1,2)
 	print('value in map: max {}, min {}'.format(imgs1.max(),imgs1.min()))
 	mse = np.mean((imgs1-imgs2)**2, axis = axis_tuple)
-	psnr_scores = 20*np.log10(1.0/np.sqrt(mse))
+	psnr_scores = 20*np.log10(255/np.sqrt(mse))
 	return np.mean(psnr_scores), psnr_scores
 
 def plot_psnr_histogram(file_name, psnr_list1, psnr_list2, rho_list1, rho_list2):
