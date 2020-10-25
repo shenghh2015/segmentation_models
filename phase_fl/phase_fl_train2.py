@@ -40,12 +40,13 @@ parser.add_argument("--loss", type=str, default = 'mse')
 parser.add_argument("--batch_size", type=int, default = 6)
 parser.add_argument("--lr", type=float, default = 5e-4)
 parser.add_argument("--decay", type=float, default = 0.8)
+parser.add_argument("--delta", type=float, default = 10)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-act-{}-scale-{}-decay-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.loss, args.act_fun, args.scale, args.decay)
+model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.loss, args.act_fun, args.scale, args.decay, args.delta)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -72,7 +73,10 @@ else:
 
 	x_test_dir = os.path.join(DATA_DIR, 'test/phase')
 	y_test_dir = os.path.join(DATA_DIR, 'test/fl')
-	val_dim = 896
+	if args.dataset == 'neuron_x1':
+		val_dim = 1792
+	elif args.dataset == 'neuron_x2':
+		val_dim = 896
 
 print(y_train_dir)
 
@@ -280,7 +284,7 @@ if args.loss == 'mse':
 elif args.loss == 'mae':
 	loss = tf.keras.losses.MAE
 elif args.loss == 'huber':
-	loss = tf.keras.losses.Huber
+	loss = tf.keras.losses.Huber(delta = args.delta)
 
 metrics = [sm.metrics.PSNR(max_val=args.scale)]
 
