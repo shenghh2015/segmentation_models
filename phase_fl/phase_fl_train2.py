@@ -30,6 +30,7 @@ parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
 parser.add_argument("--dataset", type=str, default = 'bead_dataset')
+parser.add_argument("--subset", type=str, default = 'train2')
 parser.add_argument("--epoch", type=int, default = 10)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--rot", type=float, default = 0)
@@ -45,8 +46,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.loss, args.act_fun, args.scale, args.decay, args.delta)
+model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -65,8 +66,8 @@ if args.dataset == 'bead_dataset':
 	y_test_dir = y_valid_dir
 	val_dim = 608
 else:
-	x_train_dir = os.path.join(DATA_DIR, 'train2/phase')
-	y_train_dir = os.path.join(DATA_DIR, 'train2/fl')
+	x_train_dir = os.path.join(DATA_DIR, '{}/phase'.format(args.subset))
+	y_train_dir = os.path.join(DATA_DIR, '{}/fl'.format(args.subset))
 
 	x_valid_dir = os.path.join(DATA_DIR, 'test/phase')
 	y_valid_dir = os.path.join(DATA_DIR, 'test/fl')
@@ -284,7 +285,7 @@ if args.loss == 'mse':
 elif args.loss == 'mae':
 	loss = tf.keras.losses.MAE
 elif args.loss == 'huber':
-	loss = tf.keras.losses.Huber(delta = args.delta)
+	loss = tf.keras.losses.Huber(reduction=tf.keras.losses.Reduction.NONE)
 
 metrics = [sm.metrics.PSNR(max_val=args.scale)]
 

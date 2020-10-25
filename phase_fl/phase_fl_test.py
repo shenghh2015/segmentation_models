@@ -16,24 +16,33 @@ sm.set_framework('tf.keras')
 import glob
 from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '2'
-
 model_root_folder = '/data/models_fl/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
+parser.add_argument("--gpu", type=str, default = '2')
 args = parser.parse_args()
 print(args)
 
-model_pools = ['phase_fl-net-AtUnet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100',
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+model_pools = ['phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
 			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb4-pre-True-epoch-100-batch-8-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb5-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8']
+			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8']
+
+# model_pools = ['phase_fl-net-AtUnet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-AtUnet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-AtUnet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-AtUnet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100',
+# 			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb4-pre-True-epoch-100-batch-8-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb5-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8']
 
 #model_name = 'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-320-train-None-rot-0-set-bead_dataset_v2-loss-mse-act-relu-scale-100'
 #model_name = 'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-bead_dataset_v2-loss-mse-act-relu-scale-100'
