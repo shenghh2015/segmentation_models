@@ -72,7 +72,10 @@ else:
 
 	x_test_dir = os.path.join(DATA_DIR, 'test/phase')
 	y_test_dir = os.path.join(DATA_DIR, 'test/fl')
-	val_dim = 896
+	if args.dataset == 'neuron_x1':
+		val_dim = 1792
+	elif args.dataset == 'neuron_x2':
+		val_dim = 896
 
 print(y_train_dir)
 
