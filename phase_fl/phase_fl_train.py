@@ -361,7 +361,7 @@ images = np.stack(images); gt_masks = np.stack(gt_masks)
 
 # scale back from args.flu_scale
 gt_masks = np.uint8(gt_masks/args.scale*255)
-pr_masks = pr_masks/scale*255
+pr_masks = pr_masks/args.scale*255
 pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
 
 # save prediction examples

@@ -1,68 +1,59 @@
 import os
 import cv2
 from skimage import io
+import sys
+# import keras
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import argparse
+from natsort import natsorted
+# sys.path.append('../')
 import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet
-
-from helper_function import plot_history_flu, plot_set_prediction, generate_folder
-from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
-from helper_function import plot_flu_prediction, plot_psnr_histogram
-
 sm.set_framework('tf.keras')
-import glob
-from natsort import natsorted
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '2'
+from helper_function import plot_history_flu, plot_flu_prediction, plot_set_prediction
+from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
+from sklearn.metrics import confusion_matrix
 
-model_root_folder = '/data/models_fl/'
+def str2bool(value):
+    return value.lower() == 'true'
+
+def generate_folder(folder_name):
+	if not os.path.exists(folder_name):
+		os.system('mkdir -p {}'.format(folder_name))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_index", type=int, default = 0)
+parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--docker", type=str2bool, default = True)
+parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
+parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
+parser.add_argument("--dataset", type=str, default = 'bead_dataset')
+parser.add_argument("--epoch", type=int, default = 10)
+parser.add_argument("--dim", type=int, default = 512)
+parser.add_argument("--rot", type=float, default = 0)
+parser.add_argument("--scale", type=float, default = 100)
+parser.add_argument("--train", type=int, default = None)
+parser.add_argument("--act_fun", type=str, default = 'relu')
+parser.add_argument("--loss", type=str, default = 'mse')
+parser.add_argument("--batch_size", type=int, default = 6)
+parser.add_argument("--lr", type=float, default = 5e-4)
+parser.add_argument("--decay", type=float, default = 0.8)
+parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_pools = ['phase_fl-net-AtUnet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-AtUnet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100',
-			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb4-pre-True-epoch-100-batch-8-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb5-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8']
+model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-act-{}-scale-{}-decay-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.loss, args.act_fun, args.scale, args.decay)
+print(model_name)
 
-#model_name = 'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-320-train-None-rot-0-set-bead_dataset_v2-loss-mse-act-relu-scale-100'
-#model_name = 'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-bead_dataset_v2-loss-mse-act-relu-scale-100'
-#model_name = 'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-200-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100'
-model_name = model_pools[args.model_index]
-model_folder = model_root_folder+model_name
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-## parse model name
-splits = model_name.split('-')
-dataset = 'bead_dataset'
-val_dim = 608
+DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
+train_dim = args.dim
 
-scale = 100
-for v in range(len(splits)):
-	if splits[v] == 'net':
-		net_arch = splits[v+1]
-	elif splits[v] == 'bone':
-		backbone = splits[v+1]
-	elif splits[v] == 'scale':
-		scale = float(splits[v+1])
-	elif splits[v] == 'act':
-		act_fun = splits[v+1]
-	elif splits[v] == 'scale':
-		scale = int(splits[v+1])
-	elif splits[v] == 'set':
-		dataset = splits[v+1]
-
-DATA_DIR = '/data/datasets/{}'.format(dataset)
-if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
+if args.dataset == 'bead_dataset':
 	x_train_dir = os.path.join(DATA_DIR, 'train_phase')
 	y_train_dir = os.path.join(DATA_DIR, 'train_fl')
 
@@ -73,11 +64,11 @@ if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
 	y_test_dir = y_valid_dir
 	val_dim = 608
 else:
-	x_train_dir = os.path.join(DATA_DIR, 'train/phase')
-	y_train_dir = os.path.join(DATA_DIR, 'train/fl')
+	x_train_dir = os.path.join(DATA_DIR, 'train2/phase')
+	y_train_dir = os.path.join(DATA_DIR, 'train2/fl')
 
-	x_valid_dir = os.path.join(DATA_DIR, 'valid/phase')
-	y_valid_dir = os.path.join(DATA_DIR, 'valid/fl')
+	x_valid_dir = os.path.join(DATA_DIR, 'test/phase')
+	y_valid_dir = os.path.join(DATA_DIR, 'test/fl')
 
 	x_test_dir = os.path.join(DATA_DIR, 'test/phase')
 	y_test_dir = os.path.join(DATA_DIR, 'test/fl')
@@ -261,73 +252,121 @@ def get_preprocessing(preprocessing_fn):
     ]
     return A.Compose(_transform)
 
-# network
-best_weight = model_folder+'/best_model.h5'
-preprocess_input = sm.get_preprocessing(backbone)
+
+# BACKBONE = 'efficientnetb3'
+BACKBONE = args.backbone
+BATCH_SIZE = args.batch_size
+LR = args.lr
+EPOCHS = args.epoch
+
+preprocess_input = sm.get_preprocessing(BACKBONE)
+
+# define network parameters
+n_classes = 3
+activation = '{}'.format(args.act_fun)
 
 #create model
-# CLASSES = ['live', 'inter', 'dead']
-n_classes = 3
-activation = 'relu'
-net_func = globals()[net_arch]
-model = net_func(backbone, classes=n_classes, activation=activation)
+net_func = globals()[args.net_type]
 
-#load best weights
-model.load_weights(best_weight)
+encoder_weights='imagenet' if args.pre_train else None
 
-## save model
-model.save(model_folder+'/ready_model.h5')
+model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+
+# define optomizer
+optim = tf.keras.optimizers.Adam(LR)
+
+if args.loss == 'mse':
+	loss = tf.keras.losses.MSE
+elif args.loss == 'mae':
+	loss = tf.keras.losses.MAE
+
+metrics = [sm.metrics.PSNR(max_val=args.scale)]
+
+# compile keras model with defined optimozer, loss and metrics
+model.compile(optim, loss, metrics)
+
+# Dataset for train images
+train_dataset = Dataset(
+    x_train_dir, 
+    y_train_dir,
+    scale = args.scale,
+    nb_data=args.train, 
+    augmentation=get_training_augmentation(train_dim, args.rot),
+    preprocessing=get_preprocessing(preprocess_input),
+)
+
+# Dataset for validation images
+valid_dataset = Dataset(
+    x_valid_dir, 
+    y_valid_dir,
+    scale = args.scale,
+    augmentation=get_validation_augmentation(val_dim),
+    preprocessing=get_preprocessing(preprocess_input),
+)
+
+train_dataloader = Dataloder(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+valid_dataloader = Dataloder(valid_dataset, batch_size=1, shuffle=False)
+
+print(train_dataloader[0][0].shape)
+# check shapes for errors
+assert train_dataloader[0][0].shape == (BATCH_SIZE, train_dim, train_dim, 3)
+assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_classes)
+
+model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
+generate_folder(model_folder)
+
+
+# define callbacks for learning rate scheduling and best checkpoints saving
+callbacks = [
+    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
+    tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
+]
+
+# train model
+history = model.fit_generator(
+    train_dataloader, 
+    steps_per_epoch=len(train_dataloader), 
+    epochs=EPOCHS, 
+    callbacks=callbacks, 
+    validation_data=valid_dataloader, 
+    validation_steps=len(valid_dataloader),
+)
+
+# save the training information
+plot_history_flu(model_folder+'/train_history.png',history)
+
 # evaluate model
-# subsets = ['train', 'val', 'test']
-# subsets = ['train', 'test']
-# subsets = ['test']
-# subset = subsets[2]
-subset = 'test'
-# for subset in subsets:
-# subset
-if subset == 'val':
-	x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
-elif subset == 'train':
-	x_test_dir = x_train_dir; y_test_dir = y_train_dir
-
 test_dataset = Dataset(
-	x_test_dir, 
-	y_test_dir,
-	scale = scale,
-	augmentation=get_validation_augmentation(val_dim),
-	preprocessing=get_preprocessing(preprocess_input),
+    x_test_dir, 
+    y_test_dir,
+    scale = args.scale,
+    augmentation=get_validation_augmentation(val_dim),
+    preprocessing=get_preprocessing(preprocess_input),
 )
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-## evaluate the performance
-# calculate the pixel-level classification performance
-pr_masks = model.predict(test_dataloader)
-# scale back to [0,1]
-pr_masks = pr_masks/scale
-gt_masks = []
-for i in range(len(test_dataset)):
-	_, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-gt_masks = np.stack(gt_masks)
+# load best weights
+model.load_weights(model_folder+'/best_model.h5')
+scores = model.evaluate_generator(test_dataloader)
+print("Loss: {:.5}".format(scores[0]))
+for metric, value in zip(metrics, scores[1:]):
+    print("mean {}: {:.5}".format(metric.__name__, value))
 
-# save prediction examples
+# calculate the pixel-level classification performance
 pr_masks = model.predict(test_dataloader)
 gt_masks = []; images = []
 for i in range(len(test_dataset)):
-	image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
+    image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
 images = np.stack(images); gt_masks = np.stack(gt_masks)
 
 # scale back from args.flu_scale
-gt_masks = np.uint8(gt_masks/scale*255)
-pr_masks = pr_masks/scale*255
+gt_masks = np.uint8(gt_masks/args.scale*255)
+pr_masks = pr_masks/args.scale*255
 pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
 
 # save prediction examples
-plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 8
+plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 10
 plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
-## save prediction results
-pred_folder = model_folder+'/pred_fl_only'; generate_folder(pred_folder)
-for i in range(gt_masks.shape[0]):
-	io.imsave(pred_folder+'/p{}'.format(test_dataset.ids[i]), pr_masks[i,:,:])
 # output_dir = model_folder+'/pred_fl'; generate_folder(output_dir)
 # plot_set_prediction(output_dir, images, gt_masks, pr_masks)
 # calculate PSNR
@@ -338,7 +377,10 @@ print('PSNR: {:.4f}'.format(mPSNR))
 mPear, pear_scores = calculate_pearsonr(gt_masks, pr_masks)
 print('Pearsonr:{:.4f}'.format(mPear))
 
-with open(model_folder+'/{}_metric_summary.txt'.format(subset),'w+') as f:
+with open(model_folder+'/metric_summary.txt','w+') as f:
+	# average psnr
+	for metric, value in zip(metrics, scores[1:]):
+		f.write("mean {}: {:.5}\n".format(metric.__name__, value))
 	# save PSNR over fluorescent 1 and fluorescent 2
 	f.write('PSNR: {:.4f}\n'.format(mPSNR))
 	f.write('Pearsonr:{:.4f}\n'.format(mPear))
