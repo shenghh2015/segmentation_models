@@ -279,6 +279,8 @@ if args.loss == 'mse':
 	loss = tf.keras.losses.MSE
 elif args.loss == 'mae':
 	loss = tf.keras.losses.MAE
+elif args.loss == 'huber':
+	loss = tf.keras.losses.Huber
 
 metrics = [sm.metrics.PSNR(max_val=args.scale)]
 
