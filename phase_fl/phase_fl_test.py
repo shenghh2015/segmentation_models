@@ -25,14 +25,25 @@ args = parser.parse_args()
 print(args)
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-model_pools = ['phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
-			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8']
+model_pools = ['phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-4-lr-0.0005-dim-800-train-None-rot-10.0-set-neuron_x2-subset-train3_249-loss-mse-act-relu-scale-100-decay-0.8-delta-10',
+			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-4-lr-0.0005-dim-800-train-None-rot-10.0-set-neuron_x2-subset-train3_249-loss-mse-act-relu-scale-100-decay-0.8-delta-10',
+			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-4-lr-0.0005-dim-800-train-None-rot-10.0-set-neuron_x2-subset-train3_249-loss-mse-act-relu-scale-100-decay-0.8-delta-10',
+			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-4-lr-0.0005-dim-800-train-None-rot-10.0-set-neuron_x2-subset-train3_249-loss-mse-act-relu-scale-100-decay-0.8-delta-10'
+			   ]
+
+# model_pools = ['phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mae-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb5-pre-True-epoch-100-batch-6-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb6-pre-True-epoch-100-batch-4-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb7-pre-True-epoch-100-batch-4-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
+# 			   'phase_fl-net-Unet-bone-efficientnetb4-pre-True-epoch-100-batch-8-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8'
+# 			   ]
 
 # model_pools = ['phase_fl-net-AtUnet-bone-efficientnetb0-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
 # 			   'phase_fl-net-AtUnet-bone-efficientnetb1-pre-True-epoch-100-batch-14-lr-0.0005-dim-512-train-None-rot-20.0-set-neuron_x2-loss-mse-act-relu-scale-100-decay-0.8',
@@ -56,6 +67,7 @@ dataset = 'bead_dataset'
 val_dim = 608
 
 scale = 100
+subset = 'train2'
 for v in range(len(splits)):
 	if splits[v] == 'net':
 		net_arch = splits[v+1]
@@ -69,7 +81,9 @@ for v in range(len(splits)):
 		scale = int(splits[v+1])
 	elif splits[v] == 'set':
 		dataset = splits[v+1]
-
+	elif splits[v] == 'subset':
+		subset = splits[v+1]
+		
 DATA_DIR = '/data/datasets/{}'.format(dataset)
 if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
 	x_train_dir = os.path.join(DATA_DIR, 'train_phase')
@@ -82,8 +96,8 @@ if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
 	y_test_dir = y_valid_dir
 	val_dim = 608
 else:
-	x_train_dir = os.path.join(DATA_DIR, 'train/phase')
-	y_train_dir = os.path.join(DATA_DIR, 'train/fl')
+	x_train_dir = os.path.join(DATA_DIR, '{}/phase'.format(subset))
+	y_train_dir = os.path.join(DATA_DIR, '{}/fl'.format(subset))
 
 	x_valid_dir = os.path.join(DATA_DIR, 'valid/phase')
 	y_valid_dir = os.path.join(DATA_DIR, 'valid/fl')
