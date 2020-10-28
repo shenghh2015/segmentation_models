@@ -1,1 +1,1 @@
-python phase_fl_train2.py --net_type Unet --backbone efficientnetb3 --dataset neuron_x1 --epoch 100 --dim 1024 --loss mae --batch_size 4 --rot 20 --lr 5e-4 --pre_train True --gpu 3
+python phase_fl_train2.py --net_type Unet --backbone efficientnetb3 --dataset neuron_x2 --subset train3_249 --epoch 100 --dim 800 --loss mse --batch_size 4 --rot 10 --lr 5e-4 --pre_train True --gpu 3
