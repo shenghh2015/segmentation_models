@@ -1,0 +1,4 @@
+phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-50-batch-4-lr-0.0005-dim-1024-train-None-rot-20.0-set-neuron_x1-subset-train2-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-1-cho-1
+phase_fl-net-Unet-bone-efficientnetb2-pre-True-epoch-50-batch-4-lr-0.0005-dim-1024-train-None-rot-20.0-set-neuron_x1-subset-train2-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-1
+phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-50-batch-4-lr-0.0005-dim-1024-train-None-rot-20.0-set-neuron_x1-subset-train2-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-1-cho-1
+phase_fl-net-Unet-bone-efficientnetb3-pre-True-epoch-50-batch-4-lr-0.0005-dim-1024-train-None-rot-20.0-set-neuron_x1-subset-train2-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-1

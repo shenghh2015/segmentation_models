@@ -322,15 +322,6 @@ test_dataset = Dataset(
 )
 
 test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-## evaluate the performance
-# calculate the pixel-level classification performance
-pr_masks = model.predict(test_dataloader)
-# scale back to [0,1]
-pr_masks = pr_masks/scale
-gt_masks = []
-for i in range(len(test_dataset)):
-	_, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-gt_masks = np.stack(gt_masks)
 
 # save prediction examples
 pr_masks = model.predict(test_dataloader)

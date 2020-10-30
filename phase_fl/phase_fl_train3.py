@@ -33,6 +33,7 @@ parser.add_argument("--dataset", type=str, default = 'bead_dataset')
 parser.add_argument("--subset", type=str, default = 'train2')
 parser.add_argument("--epoch", type=int, default = 10)
 parser.add_argument("--dim", type=int, default = 512)
+parser.add_argument("--separate_mode", type=int, default = 0)
 parser.add_argument("--ch_in", type=int, default = 3)
 parser.add_argument("--ch_out", type=int, default = 3)
 parser.add_argument("--rot", type=float, default = 0)
@@ -48,8 +49,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out)
+model_name = 'phase_fl-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-sep-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.separate_mode)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -103,6 +104,7 @@ class Dataset:
             images_dir, 
             masks_dir,
             scale = 1.0,
+            separate_mode = 0,
             channels = [3,3],
             nb_data=None,
             augmentation=None, 
@@ -110,6 +112,11 @@ class Dataset:
     ):
         #self.ids = os.listdir(images_dir)
         id_list = natsorted(os.listdir(images_dir))
+        beadset = [27, 28, 29, 30, 31, 32]
+        if separate_mode == 1:
+            id_list = [id for id in id_list if not int(id.split('-')[1]) in beadset]
+        elif separate_mode == 2:
+            id_list = [id for id in id_list if int(id.split('-')[1]) in beadset]
         if nb_data ==None:
             self.ids = id_list
         else:
@@ -121,6 +128,7 @@ class Dataset:
         self.augmentation = augmentation
         self.preprocessing = preprocessing
         self.channels = channels
+        self.separate_mode = separate_mode
     
     def __getitem__(self, i):
         image = io.imread(self.images_fps[i])
@@ -303,6 +311,7 @@ train_dataset = Dataset(
     x_train_dir, 
     y_train_dir,
     channels = [args.ch_in, args.ch_out],
+    separate_mode = args.separate_mode,
     scale = args.scale,
     nb_data=args.train, 
     augmentation=get_training_augmentation(train_dim, args.rot),
@@ -315,6 +324,7 @@ valid_dataset = Dataset(
     y_valid_dir,
     scale = args.scale,
     channels = [args.ch_in, args.ch_out],
+    separate_mode = args.separate_mode,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),
 )
@@ -356,6 +366,7 @@ test_dataset = Dataset(
     x_test_dir, 
     y_test_dir,
     channels = [args.ch_in, args.ch_out],
+    separate_mode = args.separate_mode,
     scale = args.scale,
     augmentation=get_validation_augmentation(val_dim),
     preprocessing=get_preprocessing(preprocess_input),

@@ -84,6 +84,35 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_see
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=60)
 
 ## for only 3-channel output
+def plot_prediction_zx(file_name, ph_vol, gt_vol, pr_vol, z_index, x_index):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	import random
+	z_index, x_index = z_index, x_index
+	widths = [1, 1, 1]; heights = [1, 0.34] 
+	gs_kw = dict(width_ratios=widths, height_ratios=heights)
+	rows, cols, size = 2,3,5
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows))
+	kx = fig.subplots(nrows=rows, ncols=cols, gridspec_kw=gs_kw)
+	ax, bx, cx = kx[0,0], kx[0,1], kx[0,2]
+	ex, fx, gx = kx[1,0], kx[1,1], kx[1,2]
+	print(ph_vol.shape)
+	cax = ax.imshow(ph_vol[z_index-1:z_index+2,:,:].transpose((1,2,0))); fig.colorbar(cax, ax = ax)
+	cbx = bx.imshow(gt_vol[z_index-1:z_index+2,:,:].transpose((1,2,0))); fig.colorbar(cbx, ax = bx)
+	ccx = cx.imshow(pr_vol[z_index-1:z_index+2,:,:].transpose((1,2,0))); fig.colorbar(ccx, ax = cx)
+	ax.set_title('Phase (z={})'.format(z_index)); bx.set_title('GT fl'); cx.set_title('Pred fl')
+	ax.set_ylabel('x')
+	ax.set_xlabel('y')
+	cex = ex.imshow(ph_vol[:,x_index-1:x_index+2,:].transpose((0,2,1))); fig.colorbar(cex, ax = ex)
+	cfx = fx.imshow(gt_vol[:,x_index-1:x_index+2,:].transpose((0,2,1))); fig.colorbar(cfx, ax = fx)
+	cgx = gx.imshow(pr_vol[:,x_index-1:x_index+2,:].transpose((0,2,1))); fig.colorbar(cgx, ax = gx)
+	ex.set_ylabel('z')
+	ex.set_title('x={}'.format(x_index))
+	ex.set_xlabel('y')
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=60)
+
+## for only 3-channel output
 def plot_set_prediction(output_dir, images, gt_maps, pr_maps):
 	import matplotlib.pyplot as plt
 	from matplotlib.backends.backend_agg import FigureCanvasAgg
