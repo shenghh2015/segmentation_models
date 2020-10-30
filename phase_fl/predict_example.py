@@ -54,6 +54,7 @@ val_dim = 608
 scale = 100
 subset = 'train2'
 chi, cho = 3,3
+separate_mode = 0
 for v in range(len(splits)):
 	if splits[v] == 'net':
 		net_arch = splits[v+1]
@@ -73,6 +74,8 @@ for v in range(len(splits)):
 		chi = int(splits[v+1])
 	elif splits[v] == 'cho':
 		cho = int(splits[v+1])
+	elif splits[v] == 'sep':
+		separate_mode = int(splits[v+1])
 
 DATA_DIR = '/data/datasets/neuron_dataset_x{}'.format(dataset[-1])
 if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
@@ -89,6 +92,12 @@ volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 train_fns = read_txt(DATA_DIR+'/train_list.txt')+read_txt(DATA_DIR+'/valid_list.txt')
 test_fns = read_txt(DATA_DIR+'/test_list.txt')
 
+if separate_mode == 1:
+    train_fns = [fn for fn in train_fns if not 'umbeads' in fn]
+    test_fns = [fn for fn in test_fns if not 'umbeads' in fn]
+elif separate_mode == 2:
+    train_fns = [fn for fn in train_fns if 'umbeads' in fn]
+    test_fns = [fn for fn in test_fns if 'umbeads' in fn]
 ## volum formulation
 def extract_vol(vol):
 	vol_extr = []
