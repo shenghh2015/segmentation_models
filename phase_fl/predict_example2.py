@@ -77,7 +77,7 @@ for v in range(len(splits)):
 	elif splits[v] == 'sep':
 		separate_mode = int(splits[v+1])
 
-DATA_DIR = '/data/datasets/neuron_dataset_x{}'.format(dataset[-1])
+DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
 if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':
     val_dim = 608
 elif dataset == 'neuron_x2':
@@ -89,15 +89,15 @@ elif dataset == 'neuron_x1':
     
 volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 
-train_fns = read_txt(DATA_DIR+'/train_list.txt')+read_txt(DATA_DIR+'/valid_list.txt')
-test_fns = read_txt(DATA_DIR+'/test_list.txt')
-
-if separate_mode == 1:
-    train_fns = [fn for fn in train_fns if not 'umbeads' in fn]
-    test_fns = [fn for fn in test_fns if not 'umbeads' in fn]
-elif separate_mode == 2:
-    train_fns = [fn for fn in train_fns if 'umbeads' in fn]
-    test_fns = [fn for fn in test_fns if 'umbeads' in fn]
+# train_fns = read_txt(DATA_DIR+'/train_list.txt')+read_txt(DATA_DIR+'/valid_list.txt')
+# test_fns = read_txt(DATA_DIR+'/test_list.txt')
+# 
+# if separate_mode == 1:
+#     train_fns = [fn for fn in train_fns if not 'umbeads' in fn]
+#     test_fns = [fn for fn in test_fns if not 'umbeads' in fn]
+# elif separate_mode == 2:
+#     train_fns = [fn for fn in train_fns if 'umbeads' in fn]
+#     test_fns = [fn for fn in test_fns if 'umbeads' in fn]
 ## volum formulation
 def extract_vol(vol):
 	vol_extr = []
@@ -276,88 +276,86 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
-subsets = ['test', 'train']
-subset = 'test'
+subset = 'bead_sample'
 
-for subset in subsets:
-		vol_fns = train_fns if subset == 'train' else test_fns
-		psnr_scores = []
-		cor_scores = []
-		mse_scores = []
-		for vol_fn in vol_fns:
-				# vol_fn = vol_fns[0]
-				if not os.path.exists(os.path.join(DATA_DIR, vol_fn)):
-				    continue
-				print('{}: {}'.format(subset, vol_fn))
-				X_dir = os.path.join(DATA_DIR, vol_fn,'phase')
-				Y_dir = os.path.join(DATA_DIR, vol_fn,'fl2')
+vol_fns = volume_fns
+psnr_scores = []
+cor_scores = []
+mse_scores = []
+for vol_fn in vol_fns:
+		# vol_fn = vol_fns[0]
+		if not os.path.exists(os.path.join(DATA_DIR, vol_fn)):
+				continue
+		print('{}: {}'.format(subset, vol_fn))
+		X_dir = os.path.join(DATA_DIR, vol_fn,'phase')
+		Y_dir = os.path.join(DATA_DIR, vol_fn,'fl2')
 
-				test_dataset = Dataset(
-					X_dir, 
-					Y_dir,
-					channels = [chi, cho],
-					scale = scale,
-					augmentation=get_validation_augmentation(val_dim),
-					preprocessing=get_preprocessing(preprocess_input),
-				)
-        
-				print(test_dataset[0][0].shape, test_dataset[0][1].shape)
-        
-				test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+		test_dataset = Dataset(
+			X_dir, 
+			Y_dir,
+			channels = [chi, cho],
+			scale = scale,
+			augmentation=get_validation_augmentation(val_dim),
+			preprocessing=get_preprocessing(preprocess_input),
+		)
+		
+		print(test_dataset[0][0].shape, test_dataset[0][1].shape)
+		
+		test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 
-				# prediction and ground truth
-				pr_masks = model.predict(test_dataloader)
-				gt_masks = []; images = []
-				for i in range(len(test_dataset)):
-					image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
-				images = np.stack(images); gt_masks = np.stack(gt_masks)
+		# prediction and ground truth
+		pr_masks = model.predict(test_dataloader)
+		gt_masks = []; images = []
+		for i in range(len(test_dataset)):
+			image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
+		images = np.stack(images); gt_masks = np.stack(gt_masks)
 
-				# scale to [0,255]
-				gt_masks = np.uint8(gt_masks/scale*255); gt_masks = gt_masks.squeeze()
-				pr_masks = pr_masks/scale*255; pr_masks = pr_masks.squeeze()
-				pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
-				images = np.uint8(images*255)
+		# scale to [0,255]
+		gt_masks = np.uint8(gt_masks/scale*255); gt_masks = gt_masks.squeeze()
+		pr_masks = pr_masks/scale*255; pr_masks = pr_masks.squeeze()
+		pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
+		images = np.uint8(images*255)
 
-				# extract the target prediction
-				# offset = 12
-				ph_vol = extract_vol(images)
-				if cho == 3:
-						gt_vol = extract_vol(gt_masks)
-						pr_vol = extract_vol(pr_masks)
-				else:
-						gt_vol = gt_masks
-						pr_vol = pr_masks
-				pr_vol = pr_vol[:,offset:-offset,offset:-offset]
-				gt_vol = gt_vol[:,offset:-offset,offset:-offset]
-				ph_vol = ph_vol[:,offset:-offset,offset:-offset]
+		# extract the target prediction
+		# offset = 12
+		ph_vol = extract_vol(images)
+		if cho == 3:
+				gt_vol = extract_vol(gt_masks)
+				pr_vol = extract_vol(pr_masks)
+		else:
+				gt_vol = gt_masks
+				pr_vol = pr_masks
+		pr_vol = pr_vol[:,offset:-offset,offset:-offset]
+		gt_vol = gt_vol[:,offset:-offset,offset:-offset]
+		ph_vol = ph_vol[:,offset:-offset,offset:-offset]
 
-				# psnr and pearsonr correlation
-				mse_score = np.mean(np.square(pr_vol-gt_vol))
-				psnr_score = calculate_psnr(pr_vol, gt_vol)
-				cor_score = calculate_pearsonr(pr_vol, gt_vol)
-				mse_scores.append(mse_score); psnr_scores.append(psnr_score); cor_scores.append(cor_score)
+		# psnr and pearsonr correlation
+		mse_score = np.mean(np.square(pr_vol-gt_vol))
+		psnr_score = calculate_psnr(pr_vol, gt_vol)
+		cor_score = calculate_pearsonr(pr_vol, gt_vol)
+		mse_scores.append(mse_score); psnr_scores.append(psnr_score); cor_scores.append(cor_score)
 
-				# save prediction
-				pred_save = True
-				if pred_save:
-						pr_vol_dir = model_folder+'/pred_vols'
-						generate_folder(pr_vol_dir)
-						np.save(os.path.join(pr_vol_dir,'Pr_{}.npy'.format(vol_fn)), pr_vol)
-						np.save(os.path.join(pr_vol_dir,'GT_{}.npy'.format(vol_fn)), gt_vol)
-						print(pr_vol.shape)
-				
-				print('{}: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score, cor_score, mse_score))
+		# save prediction
+		pred_save = False
+		if pred_save:
+				pr_vol_dir = model_folder+'/pred_vols'
+				generate_folder(pr_vol_dir)
+				np.save(os.path.join(pr_vol_dir,'Pr_{}.npy'.format(vol_fn)), pr_vol)
+				np.save(os.path.join(pr_vol_dir,'GT_{}.npy'.format(vol_fn)), gt_vol)
+				print(pr_vol.shape)
+		
+		print('{}: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score, cor_score, mse_score))
 
-				# save prediction examples
-				prediction_dir = model_folder+'/pred_examples'
-				generate_folder(prediction_dir)
-				plot_fig_file = prediction_dir+'/{}.png'.format(vol_fn)
-				z_index = 158; x_index = 250
-				plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
+		# save prediction examples
+		prediction_dir = model_folder+'/pred_beads'
+		generate_folder(prediction_dir)
+		plot_fig_file = prediction_dir+'/{}.png'.format(vol_fn)
+		z_index = 158; x_index = 250
+		plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
 
-		mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
-		print('Mean metrics: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-		with open(model_folder+'/{}_summary.txt'.format(subset),'w+') as f:
-				for i in range(len(psnr_scores)):
-						f.write('{}: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))
-				f.write('Mean metrics: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
+mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
+print('Mean metrics: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
+with open(model_folder+'/{}_summary.txt'.format(subset),'w+') as f:
+		for i in range(len(psnr_scores)):
+				f.write('{}: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))
+		f.write('Mean metrics: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))

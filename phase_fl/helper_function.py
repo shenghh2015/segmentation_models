@@ -12,7 +12,13 @@ def save_history(file_dir, history):
 	np.savetxt(file_dir+'/val_iou_score.txt', history.history['val_iou_score'])
 	np.savetxt(file_dir+'/train_f1-score.txt', history.history['f1-score'])
 	np.savetxt(file_dir+'/val_f1-score.txt', history.history['val_f1-score'])
-	
+
+def save_phase_fl_history(file_dir, history):
+	np.savetxt(file_dir+'/train_loss.txt', history.history['loss'])
+	np.savetxt(file_dir+'/val_loss.txt', history.history['val_loss'])
+	np.savetxt(file_dir+'/train_psnr.txt', history.history['psnr'])
+	np.savetxt(file_dir+'/val_psnr.txt', history.history['val_psnr'])
+
 # plot training and validation loss
 def plot_history(file_name, history):
 	import matplotlib.pyplot as plt
@@ -73,6 +79,10 @@ def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_see
 		idx = indices[i]
 		image, gt_map, pr_map = images[idx,:].squeeze(), gt_maps[idx,:].squeeze(), pr_maps[idx,:].squeeze()
 		image = np.uint8((image-image.min())/(image.max()-image.min())*255)
+		if gt_map.shape[-1] == 2 and pr_map.shape[-1] ==2:
+		    shp = (gt_map.shape[0], gt_map.shape[1], 1)
+		    gt_map = np.concatenate([gt_map, np.uint8(np.zeros(shp))], axis = -1)
+		    pr_map = np.concatenate([pr_map, np.uint8(np.zeros(shp))], axis = -1)
 		err_map = np.abs(gt_map-pr_map)
 		ax[i,0].imshow(image); ax[i,1].imshow(gt_map); 
 		ax[i,2].imshow(pr_map); ax[i,3].imshow(err_map, cmap='Blues')

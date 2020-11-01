@@ -60,7 +60,12 @@
 # JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb3 --dataset neuron_x2 --subset train3_all --epoch 50 --dim 512 --loss mse --batch_size 14 --rot 20 --lr 5e-4 --pre_train True --gpu 2 --ch_in 3 --ch_out 1 --separate_mode 2
 # JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb3 --dataset neuron_x2 --subset train3_all --epoch 50 --dim 512 --loss mse --batch_size 14 --rot 20 --lr 5e-4 --pre_train True --gpu 3 --ch_in 3 --ch_out 1 --scale 255
 
-JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 0 
-JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-5 --pre_train True --gpu 1
-JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-6 --pre_train True --gpu 2
-JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 3
+# JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 0 
+# JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-5 --pre_train True --gpu 1
+# JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-6 --pre_train True --gpu 2
+# JOB: python phase_fl_train3.py --net_type Unet --backbone efficientnetb7 --dataset neuron_x1 --subset train2 --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 3
+
+JOB: python phase_fl1_fl2_train.py --net_type Unet --backbone efficientnetb7 --dataset neuron_wbx1 --subset train --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 0 --fl_ch fl12
+JOB: python phase_fl1_fl2_train.py --net_type Unet --backbone efficientnetb7 --dataset neuron_wbx1 --subset train --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 0 --lr 1e-4 --pre_train True --gpu 1  --fl_ch fl12
+JOB: python phase_fl1_fl2_train.py --net_type Unet --backbone efficientnetb7 --dataset neuron_wbx1 --subset train --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 20 --lr 1e-4 --pre_train True --gpu 2 --fl_ch fl1
+JOB: python phase_fl1_fl2_train.py --net_type Unet --backbone efficientnetb7 --dataset neuron_wbx1 --subset train --epoch 150 --dim 512 --loss mse --batch_size 4 --rot 0 --lr 1e-4 --pre_train True --gpu 3 --fl_ch fl1

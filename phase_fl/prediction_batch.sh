@@ -1,1 +1,0 @@
-python predict_example.py --gpu 0 --model_index 0
