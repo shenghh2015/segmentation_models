@@ -338,7 +338,7 @@ for subset in subsets:
 				mse_scores.append(mse_score); psnr_scores.append(psnr_score); cor_scores.append(cor_score)
 
 				# save prediction
-				pred_save = True
+				pred_save = False
 				if pred_save:
 						pr_vol_dir = model_folder+'/pred_vols'
 						generate_folder(pr_vol_dir)
