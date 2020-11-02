@@ -105,7 +105,7 @@ def extract_vol(vol):
 		if i == 0:
 			vol_extr.append(vol[i,:,:,0])
 			vol_extr.append(vol[i,:,:,1])
-		elif i>0 and i< vol.shape[0]:
+		elif i>0 and i< vol.shape[0]-1:
 			vol_extr.append(vol[i,:,:,1])
 		else:
 			vol_extr.append(vol[i,:,:,1])
