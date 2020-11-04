@@ -8,7 +8,7 @@ import argparse
 import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet
 
-from helper_function import plot_history_flu, plot_set_prediction, generate_folder, plot_prediction_zx
+from helper_function import plot_history_flu, plot_set_prediction, generate_folder, plot_prediction_zx, plot_prediction_live
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from helper_function import plot_flu_prediction, plot_psnr_histogram
 
@@ -27,13 +27,13 @@ model_root_folder = '/data/models_fl/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
-parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--gpu", type=str, default = '2')
 args = parser.parse_args()
 print(args)
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-model_pool = read_txt('./fl1fl2_model_list.txt')
+model_pool = read_txt('./live_model_list.txt')
 for model_name in model_pool:
     print(model_name)
 model_name = model_pool[args.model_index]
@@ -48,6 +48,7 @@ scale = 100
 subset = 'train2'
 chi, cho = 3,3
 
+fl_ch = 'fl2'
 for v in range(len(splits)):
 	if splits[v] == 'net':
 		net_arch = splits[v+1]
@@ -70,15 +71,13 @@ for v in range(len(splits)):
 	elif splits[v] == 'chf':
 		fl_ch = splits[v+1]
 
-DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
-if dataset == 'neuron_wbx1':
+dataset = 'live-neuron_x1'
+DATA_DIR = '/data/datasets/live-neuron_x{}'.format(dataset[-1])
+if dataset == 'live-neuron_x1':
     val_dim = 1760  # 1744
     offset = 8
 
 volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
-
-train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
-test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
 
 ## volum formulation
 def extract_vol(vol):
@@ -282,128 +281,92 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
-subsets = ['test', 'train']
-# subset = 'test'
-for subset in subsets:
-		vol_fns = train_fns if subset == 'train' else test_fns
-		psnr_scores = []; psnr2_scores = []
-		cor_scores = []; cor2_scores = []
-		mse_scores = []; mse2_scores = []
-		for vol_fn in vol_fns:
-				# vol_fn = vol_fns[0]
-				if not os.path.exists(os.path.join(DATA_DIR, vol_fn)):
-						continue
-				print('{}: {}'.format(subset, vol_fn))
-				X_dir = os.path.join(DATA_DIR, vol_fn,'phase')
-				Y1_dir = os.path.join(DATA_DIR, vol_fn,'fl1')
-				Y2_dir = os.path.join(DATA_DIR, vol_fn,'fl2')
+subset = 'live-neuron'
+vol_fns = volume_fns
+for vol_fn in vol_fns:
+		if not os.path.exists(os.path.join(DATA_DIR, vol_fn)):
+				continue
+		print('{}: {}'.format(subset, vol_fn))
+		X_dir = os.path.join(DATA_DIR, vol_fn,'phase')
+		Y1_dir = os.path.join(DATA_DIR, vol_fn,'phase')
+		Y2_dir = os.path.join(DATA_DIR, vol_fn,'phase')
 
-				test_dataset = Dataset(
-					X_dir,
-					Y1_dir,
-					Y2_dir,
-					fl_ch = fl_ch,
-					channels = [chi, cho],
-					scale = scale,
-					augmentation=get_validation_augmentation(val_dim),
-					preprocessing=get_preprocessing(preprocess_input),
-				)
+		test_dataset = Dataset(
+			X_dir,
+			Y1_dir,
+			Y2_dir,
+			fl_ch = fl_ch,
+			channels = [chi, cho],
+			scale = scale,
+			augmentation=get_validation_augmentation(val_dim),
+			preprocessing=get_preprocessing(preprocess_input),
+		)
 
-				print(test_dataset[0][0].shape, test_dataset[0][1].shape)
+		print(test_dataset[0][0].shape, test_dataset[0][1].shape)
 
-				test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+		test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
 
-				# prediction and ground truth
-				pr_masks = model.predict(test_dataloader)
-				gt_masks = []; images = []
-				for i in range(len(test_dataset)):
-					image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
-				images = np.stack(images); gt_masks = np.stack(gt_masks)
+		# prediction and ground truth
+		pr_masks = model.predict(test_dataloader)
+		print(pr_masks.shape)
+		images = []
+		for i in range(len(test_dataset)):
+			image, _ = test_dataset[i];images.append(image)
+		images = np.stack(images)
 
-				# scale to [0,255]
-				gt_masks = np.uint8(gt_masks/scale*255); gt_masks = gt_masks.squeeze()
-				pr_masks = pr_masks/scale*255; pr_masks = pr_masks.squeeze()
-				pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
-				images = np.uint8(images*255)
+		# scale to [0,255]
+# 		gt_masks = np.uint8(gt_masks/scale*255); gt_masks = gt_masks.squeeze()
+		pr_masks = pr_masks/scale*255; pr_masks = pr_masks.squeeze()
+		pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
+		images = np.uint8(images*255)
 
-				# obtain the images, GT, and prediction
-				ph_vol = extract_vol(images)
-				ph_vol = ph_vol[:,offset:-offset,offset:-offset]
+		# obtain the images, GT, and prediction
+		ph_vol = extract_vol(images)
+		ph_vol = ph_vol[:,offset:-offset,offset:-offset]
 
-				# psnr and pearsonr correlation
-				if fl_ch == 'fl1':
-						if cho == 3:
-								gt_vol = extract_vol(gt_masks)
-								pr_vol = extract_vol(pr_masks)
-						else:
-								gt_vol = gt_masks
-								pr_vol = pr_masks
-				elif fl_ch == 'fl2':
-						if cho == 3:
-								gt_vol2 = extract_vol(gt_masks)
-								pr_vol2 = extract_vol(pr_masks)
-						else:
-								gt_vol2 = gt_masks
-								pr_vol2 = pr_masks
-				elif fl_ch == 'fl12':
-						gt_vol = gt_masks[:,:,:,0]
-						pr_vol = pr_masks[:,:,:,0]
-						gt_vol2 = gt_masks[:,:,:,1]
-						pr_vol2 = pr_masks[:,:,:,1]
+		# psnr and pearsonr correlation
+		if fl_ch == 'fl1':
+				if cho == 3:
+						pr_vol = extract_vol(pr_masks)
+				else:
+						pr_vol = pr_masks
+		elif fl_ch == 'fl2':
+				if cho == 3:
+						pr_vol2 = extract_vol(pr_masks)
+				else:
+						pr_vol2 = pr_masks
+		elif fl_ch == 'fl12':
+				pr_vol = pr_masks[:,:,:,0]
+				pr_vol2 = pr_masks[:,:,:,1]
 
-				if fl_ch == 'fl12' or fl_ch == 'fl1':
-						pr_vol = pr_vol[:,offset:-offset,offset:-offset]
-						gt_vol = gt_vol[:,offset:-offset,offset:-offset]
-						mse_score = np.mean(np.square(pr_vol-gt_vol))
-						psnr_score = calculate_psnr(pr_vol, gt_vol)
-						cor_score = calculate_pearsonr(pr_vol, gt_vol)
-						mse_scores.append(mse_score); psnr_scores.append(psnr_score); cor_scores.append(cor_score)
-						print('{}-FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score, cor_score, mse_score))
-				if fl_ch == 'fl12' or fl_ch == 'fl2':
-						pr_vol2 = pr_vol2[:,offset:-offset,offset:-offset]
-						gt_vol2 = gt_vol2[:,offset:-offset,offset:-offset]
-						mse_score2 = np.mean(np.square(pr_vol2-gt_vol2))
-						psnr_score2 = calculate_psnr(pr_vol2, gt_vol2)
-						cor_score2 = calculate_pearsonr(pr_vol2, gt_vol2)
-						mse2_scores.append(mse_score2); psnr2_scores.append(psnr_score2); cor2_scores.append(cor_score2)
-						print('{}-FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score2, cor_score2, mse_score2))
-
-				# save prediction
-				pred_save = True
-				if pred_save:
-						pr_vol_dir = model_folder+'/pred_fl1_fl2'
-						generate_folder(pr_vol_dir)
-						if fl_ch == 'fl12' or fl_ch == 'fl1':				
-								np.save(os.path.join(pr_vol_dir,'Pr1_{}.npy'.format(vol_fn)), pr_vol)
-								np.save(os.path.join(pr_vol_dir,'GT1_{}.npy'.format(vol_fn)), gt_vol)
-								print('FL1: {}'.format(pr_vol.shape))
-						if fl_ch == 'fl12' or fl_ch == 'fl2':
-								np.save(os.path.join(pr_vol_dir,'Pr2_{}.npy'.format(vol_fn)), pr_vol2)
-								np.save(os.path.join(pr_vol_dir,'GT2_{}.npy'.format(vol_fn)), gt_vol2)
-								print('FL2: {}'.format(pr_vol2.shape))
-
-				# save prediction examples
-				prediction_dir = model_folder+'/pred_examples'
-				generate_folder(prediction_dir)
-				plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
-				plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
-				z_index = 158; x_index = 250
-				if fl_ch == 'fl12' or fl_ch == 'fl1':			
-						plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
-				if fl_ch == 'fl12' or fl_ch == 'fl2':
-						plot_prediction_zx(plot_fig_file2, ph_vol, gt_vol2, pr_vol2, z_index, x_index)
-
-		if fl_ch == 'fl12' or fl_ch == 'fl1':	
-			mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
-			print('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			with open(model_folder+'/{}_FL1_summary.txt'.format(subset),'w+') as f:
-					for i in range(len(psnr_scores)):
-							f.write('{} FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))
-					f.write('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
+		if fl_ch == 'fl12' or fl_ch == 'fl1':
+				pr_vol = pr_vol[:,offset:-offset,offset:-offset]
 		if fl_ch == 'fl12' or fl_ch == 'fl2':
-			mPSNR, mCor, mMSE = np.mean(psnr2_scores), np.mean(cor2_scores), np.mean(mse2_scores)
-			print('Mean metrics on FL2: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			with open(model_folder+'/{}_FL2_summary.txt'.format(subset),'w+') as f:
-					for i in range(len(psnr2_scores)):
-							f.write('{} FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr2_scores[i], cor2_scores[i], mse2_scores[i]))
-					f.write('Mean metrics on FL2: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
+				pr_vol2 = pr_vol2[:,offset:-offset,offset:-offset]
+
+		# save prediction
+		pred_save = True
+		if pred_save:
+				pr_vol_dir = model_folder+'/pred_fl1_fl2_live'
+				generate_folder(pr_vol_dir)
+				if fl_ch == 'fl12' or fl_ch == 'fl1':				
+						np.save(os.path.join(pr_vol_dir,'Pr1_{}.npy'.format(vol_fn)), pr_vol)
+						print('FL1: {}'.format(pr_vol.shape))
+				elif fl_ch == 'fl12' or fl_ch == 'fl2':
+						np.save(os.path.join(pr_vol_dir,'Pr2_{}.npy'.format(vol_fn)), pr_vol2)
+						print('FL2: {}'.format(pr_vol2.shape))
+
+		# save prediction examples
+		prediction_dir = model_folder+'/pred_examples_live'
+		generate_folder(prediction_dir)
+		plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
+		plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
+		nb_images = 10
+		if fl_ch == 'fl12' or fl_ch == 'fl1':	
+				z_index = int(pr_vol.shape[0]/2)
+# 				plot_flu_prediction(plot_fig_file, ph_vol, pr_vol, pr_vol, nb_images)		
+				plot_prediction_live(plot_fig_file, ph_vol, pr_vol, pr_vol, z_index)
+		if fl_ch == 'fl12' or fl_ch == 'fl2':
+				z_index = int(pr_vol2.shape[0]/2)
+				plot_prediction_live(plot_fig_file2, ph_vol, pr_vol2, pr_vol2, z_index)
+# 				plot_flu_prediction(plot_fig_file2, ph_vol, pr_vol2, pr_vol2, nb_images)	
