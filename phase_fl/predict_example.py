@@ -28,6 +28,7 @@ model_root_folder = '/data/models_fl/'
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 1)
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--ch_in", type=int, default = 3)
 args = parser.parse_args()
 print(args)
 
@@ -76,6 +77,8 @@ for v in range(len(splits)):
 		cho = int(splits[v+1])
 	elif splits[v] == 'sep':
 		separate_mode = int(splits[v+1])
+
+chi = args.ch_in if args.ch_in == 1 else chi
 
 DATA_DIR = '/data/datasets/neuron_dataset_x{}'.format(dataset[-1])
 if dataset == 'bead_dataset' or dataset == 'bead_dataset_v2':

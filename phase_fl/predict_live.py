@@ -28,6 +28,7 @@ model_root_folder = '/data/models_fl/'
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '2')
+parser.add_argument("--ch_in", type=int, default = 3)
 args = parser.parse_args()
 print(args)
 
@@ -70,6 +71,8 @@ for v in range(len(splits)):
 		cho = int(splits[v+1])
 	elif splits[v] == 'chf':
 		fl_ch = splits[v+1]
+
+chi = args.ch_in if args.ch_in == 1 else chi
 
 dataset = 'live-neuron_x1'
 DATA_DIR = '/data/datasets/live-neuron_x{}'.format(dataset[-1])
@@ -347,12 +350,12 @@ for vol_fn in vol_fns:
 		# save prediction
 		pred_save = True
 		if pred_save:
-				pr_vol_dir = model_folder+'/pred_fl1_fl2_live'
+				pr_vol_dir = model_folder+'/pred_fl1_fl2_live' if chi == 3 else model_folder+'/pred_fl1_fl2_live_one_input'
 				generate_folder(pr_vol_dir)
 				if fl_ch == 'fl12' or fl_ch == 'fl1':				
 						np.save(os.path.join(pr_vol_dir,'Pr1_{}.npy'.format(vol_fn)), pr_vol)
 						print('FL1: {}'.format(pr_vol.shape))
-				elif fl_ch == 'fl12' or fl_ch == 'fl2':
+				if fl_ch == 'fl12' or fl_ch == 'fl2':
 						np.save(os.path.join(pr_vol_dir,'Pr2_{}.npy'.format(vol_fn)), pr_vol2)
 						print('FL2: {}'.format(pr_vol2.shape))
 

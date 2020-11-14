@@ -72,6 +72,8 @@ y2_test_dir = os.path.join(DATA_DIR, 'test/fl2')
 
 if args.dataset == 'neuron_wbx1':
 	val_dim = 1792
+elif args.dataset == 'spheroids_dataset_x1':
+	val_dim = 1792
 elif args.dataset == 'neuron_wbx2':
 	val_dim = 896
 
