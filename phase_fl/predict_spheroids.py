@@ -373,7 +373,7 @@ for subset in subsets:
 						print('{}-FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score2, cor_score2, mse_score2))
 
 				# save prediction
-				pred_save = True
+				pred_save = False
 				if pred_save:
 						pr_vol_dir = model_folder+'/pred_fl1_fl2'
 						generate_folder(pr_vol_dir)
