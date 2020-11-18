@@ -58,7 +58,7 @@ print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
+DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './datasets/{}'.format(args.dataset)
 train_dim = args.dim
 
 x_train_dir = os.path.join(DATA_DIR, '{}/phase'.format(args.subset))
@@ -359,7 +359,7 @@ print(train_dataloader[0][1].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, train_dim, train_dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_classes)
 
-model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
+model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/phase_fl/{}'.format(model_name)
 generate_folder(model_folder)
 
 # define callbacks for learning rate scheduling and best checkpoints saving
