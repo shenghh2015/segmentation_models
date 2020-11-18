@@ -23,11 +23,15 @@ def read_txt(txt_dir):
         lines = [line.strip() for line in f.readlines()]
     return lines
 
+def str2bool(value):
+    return value.lower() == 'true'
+
 model_root_folder = '/data/models_fl/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--save", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
@@ -373,7 +377,7 @@ for subset in subsets:
 						print('{}-FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score2, cor_score2, mse_score2))
 
 				# save prediction
-				pred_save = False
+				pred_save = args.save
 				if pred_save:
 						pr_vol_dir = model_folder+'/pred_fl1_fl2'
 						generate_folder(pr_vol_dir)
