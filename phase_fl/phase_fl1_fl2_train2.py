@@ -10,7 +10,7 @@ import argparse
 from natsort import natsorted
 # sys.path.append('../')
 import segmentation_models_v1 as sm
-from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet
+from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet, ResUnet
 sm.set_framework('tf.keras')
 
 from helper_function import plot_history_flu, save_phase_fl_history, plot_flu_prediction, plot_set_prediction

@@ -23,11 +23,15 @@ def read_txt(txt_dir):
         lines = [line.strip() for line in f.readlines()]
     return lines
 
+def str2bool(value):
+    return value.lower() == 'true'
+
 model_root_folder = '/data/models_fl/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--save", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
@@ -70,15 +74,19 @@ for v in range(len(splits)):
 	elif splits[v] == 'chf':
 		fl_ch = splits[v+1]
 
-DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
-if dataset == 'neuron_wbx1':
+# DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
+DATA_DIR = '/data/datasets/neuron_stacks'
+if dataset == 'neuron_wbx1' or 'neuron_trn_tst':
     val_dim = 1760  # 1744
     offset = 8
 
 volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 
-train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
-test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
+# train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
+# test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
+
+train_fns = read_txt(DATA_DIR+'/neuron_train_list.txt')
+test_fns = read_txt(DATA_DIR+'/neuron_test_list.txt')
 
 ## volum formulation
 def extract_vol(vol):
@@ -369,7 +377,7 @@ for subset in subsets:
 						print('{}-FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score2, cor_score2, mse_score2))
 
 				# save prediction
-				pred_save = True
+				pred_save = args.save
 				if pred_save:
 						pr_vol_dir = model_folder+'/pred_fl1_fl2'
 						generate_folder(pr_vol_dir)
@@ -387,7 +395,10 @@ for subset in subsets:
 				generate_folder(prediction_dir)
 				plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
 				plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
-				z_index = 158; x_index = 250
+				if gt_vol.shape[0]>150:
+						z_index = 158; x_index = 250
+				else:
+						z_index = 60; x_index = 250
 				if fl_ch == 'fl12' or fl_ch == 'fl1':			
 						plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
 				if fl_ch == 'fl12' or fl_ch == 'fl2':
