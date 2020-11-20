@@ -397,7 +397,7 @@ for subset in subsets:
 				generate_folder(prediction_dir)
 				plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
 				plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
-				if gt_vol.shape[0]>150:
+				if ph_vol.shape[0]>150:
 						z_index = 158; x_index = 250
 				else:
 						z_index = 60; x_index = 250

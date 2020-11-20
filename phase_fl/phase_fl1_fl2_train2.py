@@ -45,12 +45,13 @@ parser.add_argument("--batch_size", type=int, default = 6)
 parser.add_argument("--lr", type=float, default = 5e-4)
 parser.add_argument("--decay", type=float, default = 0.8)
 parser.add_argument("--delta", type=float, default = 10)
+parser.add_argument("--best", type=str2bool, default = False)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch)
+model_name = 'FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-best-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -351,10 +352,16 @@ model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './mo
 generate_folder(model_folder)
 
 # define callbacks for learning rate scheduling and best checkpoints saving
-callbacks = [
-    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
-    tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
-]
+if args.best:
+		callbacks = [
+				tf.keras.callbacks.ModelCheckpoint(model_folder+'/weights_{epoch:02d}.h5', save_weights_only=True, save_best_only=False, period=10),
+				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
+		]
+else:
+		callbacks = [
+				tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model.h5', save_weights_only=True, save_best_only=True, mode='min'),
+				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
+		]
 
 # train model
 history = model.fit_generator(
