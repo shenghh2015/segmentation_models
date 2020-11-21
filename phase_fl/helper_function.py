@@ -77,6 +77,20 @@ def plot_history_flu2(file_name, history):
 	ax[2].set_ylabel('pearson');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
 
+def plot_history_for_callback(file_name, history):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 1,3,4
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	ax[0].plot(history['loss']);ax[0].plot(history['val_loss'])
+	ax[0].set_ylabel('MSE');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
+	ax[1].plot(history['psnr']);ax[1].plot(history['val_psnr'])
+	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	ax[2].plot(history['pearson']);ax[2].plot(history['val_pearson'])
+	ax[2].set_ylabel('pearson');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
 
 ## for only 3-channel output
 def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_seed = 3):

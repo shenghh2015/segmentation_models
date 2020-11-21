@@ -13,7 +13,7 @@ import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet, ResUnet
 sm.set_framework('tf.keras')
 
-from helper_function import plot_history_flu2, save_phase_fl_history, plot_flu_prediction, plot_set_prediction
+from helper_function import plot_history_flu2, save_phase_fl_history, plot_flu_prediction, plot_set_prediction, plot_history_for_callback
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from sklearn.metrics import confusion_matrix
 
@@ -365,11 +365,18 @@ assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_clas
 model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/phase_fl/{}'.format(model_name)
 generate_folder(model_folder)
 
+class HistoryPrintCallback(tf.keras.callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+    		print(logs.keys())
+#     		if epoch%5 == 0:
+#     				plot_history_for_callback(model_folder+'/train_history.png', logs)
+
 # define callbacks for learning rate scheduling and best checkpoints saving
 if args.best:
 		callbacks = [
 				tf.keras.callbacks.ModelCheckpoint(model_folder+'/weights_{epoch:02d}.h5', save_weights_only=True, save_best_only=False, period=5),
 				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
+				HistoryPrintCallback(),
 		]
 else:
 		callbacks = [
