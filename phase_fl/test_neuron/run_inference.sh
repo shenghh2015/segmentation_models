@@ -5,4 +5,8 @@
 # python predict_neuron.py --gpu 1 --model_index 20 --save False
 # python predict_neuron.py --gpu 1 --model_index 21 --save False
 # python predict_neuron.py --gpu 2 --model_index 22 --save False
-python predict_neuron.py --gpu 2 --model_index 23 --save False
+# python predict_neuron.py --gpu 2 --model_index 23 --save False
+python predict_neuron.py --gpu 0 --model_index 23 --save False --epoch 70
+python predict_neuron.py --gpu 0 --model_index 24 --save False --epoch 59
+python predict_neuron.py --gpu 0 --model_index 25 --save False --epoch 59
+ 

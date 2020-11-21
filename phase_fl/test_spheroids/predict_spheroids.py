@@ -28,7 +28,7 @@ def read_txt(txt_dir):
 def str2bool(value):
     return value.lower() == 'true'
 
-model_root_folder = '/data/models_fl/neuron_models/'
+model_root_folder = '/data/models_fl/spheroid_models/'
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
@@ -82,8 +82,8 @@ for v in range(len(splits)):
 		best_flag = str2bool(splits[v+1])
 
 # DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
-DATA_DIR = '/data/datasets/neuron_stacks'
-if dataset == 'neuron_wbx1' or 'neuron_trn_tst':
+DATA_DIR = '/data/datasets/spheroids_infer_x1'
+if dataset == 'neuron_wbx1' or dataset == 'neuron_trn_tst' or dataset == 'spheroids_dataset_x1':
     val_dim = 1760  # 1744
     offset = 8
 
@@ -92,8 +92,8 @@ volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 # train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
 # test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
 
-train_fns = read_txt(DATA_DIR+'/neuron_train_list.txt')
-test_fns = read_txt(DATA_DIR+'/neuron_test_list.txt')
+train_fns = read_txt(DATA_DIR+'/train_list.txt')
+test_fns = read_txt(DATA_DIR+'/test_list.txt')
 
 ## volum formulation
 def extract_vol(vol):
@@ -297,8 +297,8 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
-# subsets = ['test', 'train']
 subsets = ['test']
+# subsets = ['test', 'train']
 # subset = 'test'
 for subset in subsets:
 		vol_fns = train_fns if subset == 'train' else test_fns

@@ -1,0 +1,5 @@
+FL1_FL2-net-Unet-bone-efficientnetb6-pre-True-epoch-100-batch-4-lr-0.0005-dim-512-train-None-rot-50.0-set-spheroids_dataset_x1-subset-train-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-3-chf-fl12-ext
+FL1_FL2-net-Unet-bone-efficientnetb7-pre-True-epoch-100-batch-4-lr-0.0001-dim-512-train-None-rot-50.0-set-spheroids_dataset_x1-subset-train-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-3-chf-fl12-ext
+FL1_FL2-net-Unet-bone-efficientnetb7-pre-True-epoch-100-batch-4-lr-0.0005-dim-512-train-None-rot-50.0-set-spheroids_dataset_x1-subset-train-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-3-chf-fl12-ext
+FL1_FL2-net-Unet-bone-efficientnetb0-pre-True-epoch-150-batch-14-lr-0.0001-dim-512-train-None-rot-50.0-set-spheroids_dataset_x1-subset-train-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-3-chf-fl12-best-True
+FL1_FL2-net-Unet-bone-efficientnetb0-pre-True-epoch-150-batch-14-lr-0.0005-dim-512-train-None-rot-50.0-set-spheroids_dataset_x1-subset-train-loss-mse-act-relu-scale-100-decay-0.8-delta-10-chi-3-cho-3-chf-fl12-best-True

@@ -354,7 +354,7 @@ generate_folder(model_folder)
 # define callbacks for learning rate scheduling and best checkpoints saving
 if args.best:
 		callbacks = [
-				tf.keras.callbacks.ModelCheckpoint(model_folder+'/weights_{epoch:02d}.h5', save_weights_only=True, save_best_only=False, period=1),
+				tf.keras.callbacks.ModelCheckpoint(model_folder+'/weights_{epoch:02d}.h5', save_weights_only=True, save_best_only=False, period=5),
 				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
 		]
 else:
