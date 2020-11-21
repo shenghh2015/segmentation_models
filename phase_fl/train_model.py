@@ -13,7 +13,7 @@ import segmentation_models_v1 as sm
 from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet, ResUnet
 sm.set_framework('tf.keras')
 
-from helper_function import plot_history_flu, save_phase_fl_history, plot_flu_prediction, plot_set_prediction
+from helper_function import plot_history_flu2, save_phase_fl_history, plot_flu_prediction, plot_set_prediction
 from helper_function import precision, recall, f1_score, calculate_psnr, calculate_pearsonr
 from sklearn.metrics import confusion_matrix
 
@@ -50,7 +50,7 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-best-{}'.format(args.net_type, args.backbone, args.pre_train,\
+model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-best-{}'.format(args.net_type, args.backbone, args.pre_train,\
 		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best)
 print(model_name)
 
@@ -388,7 +388,7 @@ history = model.fit_generator(
 )
 
 # save the training information
-plot_history_flu(model_folder+'/train_history.png',history)
+plot_history_flu2(model_folder+'/train_history.png',history)
 save_phase_fl_history(model_folder, history)
 
 # evaluate model

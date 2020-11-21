@@ -282,7 +282,16 @@ def get_preprocessing(preprocessing_fn):
     return A.Compose(_transform)
 
 # network
-best_weight = model_folder+'/best_model.h5' if not best_flag else model_folder+'/weights_{:02d}.h5'.format(epoch)
+if not best_flag:
+		model_file = model_folder+'/best_model-{:03d}.h5'.format(epoch)
+		print(os.path.exists(model_file))
+		if os.path.exists(model_file):
+				best_weight = model_file
+		else:
+				best_weight = model_folder+'/best_model.h5'
+else:
+		best_weight = model_folder+'/weights_{:02d}.h5'.format(epoch) if epoch<100 else model_folder+'/weights_{:03d}.h5'.format(epoch)
+
 preprocess_input = sm.get_preprocessing(backbone)
 
 #create model
@@ -416,7 +425,7 @@ for subset in subsets:
 		if fl_ch == 'fl12' or fl_ch == 'fl1':	
 			mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
 			print('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			fl1_txt_name = model_folder+'/{}_FL1_summary_{}.txt'.format(subset) if not best_flag else model_folder+'/{}_FL1_summary_{}.txt'.format(subset,epoch)
+			fl1_txt_name = model_folder+'/{}_FL1_summary.txt'.format(subset) if (not best_flag) and (not os.path.exists(model_file)) else model_folder+'/{}_FL1_summary_{}.txt'.format(subset, epoch)
 			with open(fl1_txt_name,'w+') as f:
 					for i in range(len(psnr_scores)):
 							f.write('{} FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))
@@ -424,7 +433,7 @@ for subset in subsets:
 		if fl_ch == 'fl12' or fl_ch == 'fl2':
 			mPSNR, mCor, mMSE = np.mean(psnr2_scores), np.mean(cor2_scores), np.mean(mse2_scores)
 			print('Mean metrics on FL2: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			fl2_txt_name = model_folder+'/{}_FL2_summary.txt'.format(subset) if not best_flag else model_folder+'/{}_FL2_summary_{}.txt'.format(subset,epoch)
+			fl2_txt_name = model_folder+'/{}_FL2_summary.txt'.format(subset) if (not best_flag) and (not os.path.exists(model_file)) else model_folder+'/{}_FL2_summary_{}.txt'.format(subset, epoch)
 			with open(fl2_txt_name,'w+') as f:
 					for i in range(len(psnr2_scores)):
 							f.write('{} FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr2_scores[i], cor2_scores[i], mse2_scores[i]))
