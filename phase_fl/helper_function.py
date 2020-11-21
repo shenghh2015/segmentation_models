@@ -19,6 +19,14 @@ def save_phase_fl_history(file_dir, history):
 	np.savetxt(file_dir+'/train_psnr.txt', history.history['psnr'])
 	np.savetxt(file_dir+'/val_psnr.txt', history.history['val_psnr'])
 
+def save_history_for_callback(file_dir, history):
+	np.savetxt(file_dir+'/train_loss.txt', history['loss'])
+	np.savetxt(file_dir+'/val_loss.txt', history['val_loss'])
+	np.savetxt(file_dir+'/train_psnr.txt', history['psnr'])
+	np.savetxt(file_dir+'/val_psnr.txt', history['val_psnr'])
+	np.savetxt(file_dir+'/train_psnr.txt', history['pearson'])
+	np.savetxt(file_dir+'/val_psnr.txt', history['val_pearson'])
+
 # plot training and validation loss
 def plot_history(file_name, history):
 	import matplotlib.pyplot as plt
