@@ -416,7 +416,7 @@ for subset in subsets:
 		if fl_ch == 'fl12' or fl_ch == 'fl1':	
 			mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
 			print('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			fl1_txt_name = model_folder+'/{}_FL1_summary_{}.txt'.format(subset) if not best_flag else model_folder+'/{}_FL1_summary_{}.txt'.format(subset,epoch)
+			fl1_txt_name = model_folder+'/{}_FL1_summary.txt'.format(subset) if not best_flag else model_folder+'/{}_FL1_summary_{}.txt'.format(subset, epoch)
 			with open(fl1_txt_name,'w+') as f:
 					for i in range(len(psnr_scores)):
 							f.write('{} FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))

@@ -1,9 +1,1 @@
-python predict_neuron.py --gpu 2 --model_index 16 --save False
-python predict_neuron.py --gpu 2 --model_index 2 --save False
-python predict_neuron.py --gpu 2 --model_index 3 --save False
-python predict_neuron.py --gpu 2 --model_index 4 --save False
-python predict_neuron.py --gpu 2 --model_index 5 --save False
-python predict_neuron.py --gpu 2 --model_index 6 --save False
-python predict_neuron.py --gpu 2 --model_index 7 --save False
-python predict_neuron.py --gpu 2 --model_index 8 --save False
-python predict_neuron.py --gpu 2 --model_index 10 --save False
+python predict_neuron.py --gpu 2 --model_index 26 --save False

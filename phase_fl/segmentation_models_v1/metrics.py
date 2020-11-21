@@ -311,7 +311,12 @@ class Pearson(Metric):
         super().__init__(name=name)
 
     def __call__(self, gt, pr):
-        return tf.contrib.metrics.streaming_pearson_correlation(gt, pr)
+    		return tf.contrib.metrics.streaming_pearson_correlation(pr, gt)[1]
+#         return F.pearson(
+#             gt,
+#             pr,
+#             **self.submodules
+#         )
 
 # aliases
 iou_score = IOUScore()

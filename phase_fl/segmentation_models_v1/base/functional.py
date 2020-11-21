@@ -229,6 +229,21 @@ def recall(gt, pr, class_weights=1, class_indexes=None, smooth=SMOOTH, per_image
 
     return score
 
+def pearson(y_true, y_pred, **kwargs):
+		backend = kwargs['backend']
+		# reshape stage
+# 		y_true = backend.reshape(y_true, shape=(-1, 1))
+# 		y_pred = backend.reshape(y_pred, shape=(-1, 1))
+		# normalizing stage - setting a 0 mean.
+		y_true -= backend.mean(y_true, axis = [1, 2, 3], keepdims = False)
+		y_pred -= backend.mean(y_pred, axis = [1, 2, 3], keepdims = False)
+		# normalizing stage - setting a 1 variance
+		y_true = backend.l2_normalize(y_true+SMOOTH, axis=-1)
+		y_pred = backend.l2_normalize(y_pred+SMOOTH, axis=-1)
+		# final result
+		pearson_correlation = backend.sum(y_true * y_pred, axis=-1)
+		return pearson_correlation
+
 # def psnr(gt, pr, max_val = 1.0, per_image=False, **kwargs):
 #     r"""Calculate PSNR between the ground truth (gt) and the prediction (pr).
 # 
