@@ -46,13 +46,13 @@ parser.add_argument("--batch_size", type=int, default = 6)
 parser.add_argument("--lr", type=float, default = 5e-4)
 parser.add_argument("--decay", type=float, default = 0.8)
 parser.add_argument("--delta", type=float, default = 10)
-parser.add_argument("--best", type=str2bool, default = False)  ## cancel the selection of best model
+parser.add_argument("--best_select", type=str2bool, default = True)  ## cancel the selection of best model
 parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-best-{}'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best)
+model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best_select)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -385,7 +385,7 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 #     				plot_history_for_callback(model_folder+'/train_history.png', logs)
 
 # define callbacks for learning rate scheduling and best checkpoints saving
-if args.best:
+if not args.best_select:
 		callbacks = [
 				tf.keras.callbacks.ModelCheckpoint(model_folder+'/weights_{epoch:02d}.h5', save_weights_only=True, save_best_only=False, period=5),
 				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
@@ -395,6 +395,7 @@ else:
 		callbacks = [
 				tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model-{epoch:03d}.h5', monitor='val_pearson', save_weights_only=True, save_best_only=True, mode='max'),
 				tf.keras.callbacks.ReduceLROnPlateau(factor=args.decay),
+				HistoryPrintCallback(),
 		]
 
 # train model

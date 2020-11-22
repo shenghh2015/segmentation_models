@@ -35,6 +35,7 @@ parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--epoch", type=int, default = -1)
 parser.add_argument("--save", type=str2bool, default = False)
+parser.add_argument("--train", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
@@ -306,7 +307,7 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
-subsets = ['test']
+subsets = ['test', 'train'] if args.train else ['test']
 # subsets = ['test', 'train']
 # subset = 'test'
 for subset in subsets:
