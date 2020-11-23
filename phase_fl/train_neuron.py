@@ -415,57 +415,57 @@ history = model.fit_generator(
 )
 
 # evaluate model
-test_dataset = Dataset(
-    x_test_dir, 
-    y1_test_dir,
-    y2_test_dir,
-    fl_ch = args.fl_ch,
-    channels = [args.ch_in, args.ch_out],
-    scale = args.scale,
-    augmentation=get_validation_augmentation(val_dim),
-    preprocessing=get_preprocessing(preprocess_input),
-)
-
-test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-# load best weights
-model.load_weights(model_folder+'/best_model.h5')
-model.save(model_folder+'/ready_model.h5')
-scores = model.evaluate_generator(test_dataloader)
-print("Loss: {:.5}".format(scores[0]))
-for metric, value in zip(metrics, scores[1:]):
-    print("mean {}: {:.5}".format(metric.__name__, value))
-
-# calculate the pixel-level classification performance
-pr_masks = model.predict(test_dataloader)
-gt_masks = []; images = []
-for i in range(len(test_dataset)):
-    image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
-images = np.stack(images); gt_masks = np.stack(gt_masks)
-
-# scale back from args.flu_scale
-gt_masks = np.uint8(gt_masks/args.scale*255)
-pr_masks = pr_masks/args.scale*255
-pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
-
-# save prediction examples
-plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 10
-plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
-# output_dir = model_folder+'/pred_fl'; generate_folder(output_dir)
-# plot_set_prediction(output_dir, images, gt_masks, pr_masks)
-# calculate PSNR
-mPSNR, psnr_scores = calculate_psnr(gt_masks, pr_masks)
-print('PSNR: {:.4f}'.format(mPSNR))
-
-# calculate Pearson correlation coefficient
-mPear, pear_scores = calculate_pearsonr(gt_masks, pr_masks)
-print('Pearsonr:{:.4f}'.format(mPear))
-
-with open(model_folder+'/metric_summary.txt','w+') as f:
-		# loss
-		f.write("loss {}: {:.5}\n".format(scores[0]))
-		# average psnr
-		for metric, value in zip(metrics, scores[1:]):
-				f.write("mean {}: {:.5}\n".format(metric.__name__, value))
-		# save PSNR over fluorescent 1 and fluorescent 2
-		f.write('PSNR: {:.4f}\n'.format(mPSNR))
-		f.write('Pearsonr:{:.4f}\n'.format(mPear))
+# test_dataset = Dataset(
+#     x_test_dir, 
+#     y1_test_dir,
+#     y2_test_dir,
+#     fl_ch = args.fl_ch,
+#     channels = [args.ch_in, args.ch_out],
+#     scale = args.scale,
+#     augmentation=get_validation_augmentation(val_dim),
+#     preprocessing=get_preprocessing(preprocess_input),
+# )
+# 
+# test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
+# # load best weights
+# model.load_weights(model_folder+'/best_model.h5')
+# model.save(model_folder+'/ready_model.h5')
+# scores = model.evaluate_generator(test_dataloader)
+# print("Loss: {:.5}".format(scores[0]))
+# for metric, value in zip(metrics, scores[1:]):
+#     print("mean {}: {:.5}".format(metric.__name__, value))
+# 
+# # calculate the pixel-level classification performance
+# pr_masks = model.predict(test_dataloader)
+# gt_masks = []; images = []
+# for i in range(len(test_dataset)):
+#     image, gt_mask = test_dataset[i];images.append(image); gt_masks.append(gt_mask)
+# images = np.stack(images); gt_masks = np.stack(gt_masks)
+# 
+# # scale back from args.flu_scale
+# gt_masks = np.uint8(gt_masks/args.scale*255)
+# pr_masks = pr_masks/args.scale*255
+# pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
+# 
+# # save prediction examples
+# plot_fig_file = model_folder+'/pred_examples.png'; nb_images = 10
+# plot_flu_prediction(plot_fig_file, images, gt_masks, pr_masks, nb_images)
+# # output_dir = model_folder+'/pred_fl'; generate_folder(output_dir)
+# # plot_set_prediction(output_dir, images, gt_masks, pr_masks)
+# # calculate PSNR
+# mPSNR, psnr_scores = calculate_psnr(gt_masks, pr_masks)
+# print('PSNR: {:.4f}'.format(mPSNR))
+# 
+# # calculate Pearson correlation coefficient
+# mPear, pear_scores = calculate_pearsonr(gt_masks, pr_masks)
+# print('Pearsonr:{:.4f}'.format(mPear))
+# 
+# with open(model_folder+'/metric_summary.txt','w+') as f:
+# 		# loss
+# 		f.write("loss {}: {:.5}\n".format(scores[0]))
+# 		# average psnr
+# 		for metric, value in zip(metrics, scores[1:]):
+# 				f.write("mean {}: {:.5}\n".format(metric.__name__, value))
+# 		# save PSNR over fluorescent 1 and fluorescent 2
+# 		f.write('PSNR: {:.4f}\n'.format(mPSNR))
+# 		f.write('Pearsonr:{:.4f}\n'.format(mPear))
