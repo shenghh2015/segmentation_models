@@ -51,7 +51,8 @@ parser.add_argument("--pre_train", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
-model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}'.format(args.net_type, args.backbone, args.pre_train,\
+## screen the fl1
+model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}-Scr'.format(args.net_type, args.backbone, args.pre_train,\
 		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best_select)
 print(model_name)
 
