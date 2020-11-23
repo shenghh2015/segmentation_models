@@ -24,8 +24,8 @@ def save_history_for_callback(file_dir, history):
 	np.savetxt(file_dir+'/val_loss.txt', history['val_loss'])
 	np.savetxt(file_dir+'/train_psnr.txt', history['psnr'])
 	np.savetxt(file_dir+'/val_psnr.txt', history['val_psnr'])
-	np.savetxt(file_dir+'/train_psnr.txt', history['pearson'])
-	np.savetxt(file_dir+'/val_psnr.txt', history['val_pearson'])
+	np.savetxt(file_dir+'/train_pearson.txt', history['pearson'])
+	np.savetxt(file_dir+'/val_pearson.txt', history['val_pearson'])
 
 # plot training and validation loss
 def plot_history(file_name, history):

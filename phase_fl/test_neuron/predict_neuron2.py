@@ -35,6 +35,7 @@ parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--epoch", type=int, default = -1)
 parser.add_argument("--save", type=str2bool, default = False)
+parser.add_argument("--train", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
@@ -309,7 +310,7 @@ model.load_weights(best_weight)
 model.save(model_folder+'/ready_model.h5')
 
 # subsets = ['test', 'train']
-subsets = ['test']
+subsets = ['test', 'train'] if args.train else ['test']
 # subset = 'test'
 for subset in subsets:
 		vol_fns = train_fns if subset == 'train' else test_fns
@@ -427,7 +428,7 @@ for subset in subsets:
 		if fl_ch == 'fl12' or fl_ch == 'fl1':	
 			mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
 			print('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			fl1_txt_name = model_folder+'/{}_FL1_summary.txt'.format(subset) if (not best_flag) and (not os.path.exists(model_file)) else model_folder+'/{}_FL1_summary_{}.txt'.format(subset, epoch)
+			fl1_txt_name = model_folder+'/{}_FL1_summary_{}.txt'.format(subset, epoch)
 			with open(fl1_txt_name,'w+') as f:
 					for i in range(len(psnr_scores)):
 							f.write('{} FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr_scores[i], cor_scores[i], mse_scores[i]))
@@ -435,7 +436,8 @@ for subset in subsets:
 		if fl_ch == 'fl12' or fl_ch == 'fl2':
 			mPSNR, mCor, mMSE = np.mean(psnr2_scores), np.mean(cor2_scores), np.mean(mse2_scores)
 			print('Mean metrics on FL2: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
-			fl2_txt_name = model_folder+'/{}_FL2_summary.txt'.format(subset) if not best_flag else model_folder+'/{}_FL2_summary_{}.txt'.format(subset,epoch)
+			
+			fl2_txt_name = model_folder+'/{}_FL2_summary_{}.txt'.format(subset, epoch)
 			with open(fl2_txt_name,'w+') as f:
 					for i in range(len(psnr2_scores)):
 							f.write('{} FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fns[i], psnr2_scores[i], cor2_scores[i], mse2_scores[i]))

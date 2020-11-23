@@ -72,12 +72,13 @@ x_test_dir = os.path.join(DATA_DIR, 'test/phase')
 y1_test_dir = os.path.join(DATA_DIR, 'test/fl1')
 y2_test_dir = os.path.join(DATA_DIR, 'test/fl2')
 
-if args.dataset == 'neuron_wbx1' or args.dataset == 'neuron_trn_tst':
-	val_dim = 1792
-elif args.dataset == 'spheroids_dataset_x1':
-	val_dim = 1792
-elif args.dataset == 'neuron_wbx2':
-	val_dim = 896
+val_dim = 896 if 'x2' in args.dataset else 1792 
+# if args.dataset == 'neuron_wbx1' or args.dataset == 'neuron_trn_tst':
+# 	val_dim = 1792
+# elif args.dataset == 'spheroids_dataset_x1':
+# 	val_dim = 1792
+# elif args.dataset == 'neuron_wbx2':
+# 	val_dim = 896
 
 print(x_train_dir)
 print(y1_train_dir)
