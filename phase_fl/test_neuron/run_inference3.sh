@@ -21,12 +21,13 @@
 
 ## check results
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 4 --save False --epoch 107
-python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 0 --save False --epoch 52
+# python predict_neuron2.py --model_file model_list2.txt --gpu 0 --model_index 0 --save False --epoch 36
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 7 --save False --epoch 135
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 1 --save False --epoch 30
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 6 --save False --epoch 134
 
 ## generate results
+python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 6 --save True --train True --epoch 134
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 0 --save True --train True --epoch 23
-# python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 2 --save True --train True --epoch 71
+python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 2 --save True --train True --epoch 71
 # python predict_neuron2.py --model_file model_list2.txt --gpu 2 --model_index 6 --save True --train True --epoch 76

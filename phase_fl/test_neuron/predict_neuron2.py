@@ -33,6 +33,7 @@ model_root_folder = '/data/models_fl/neuron_models/'
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--model_file", type=str, default = 'model_list.txt')
 parser.add_argument("--epoch", type=int, default = -1)
 parser.add_argument("--save", type=str2bool, default = False)
 parser.add_argument("--train", type=str2bool, default = False)
@@ -41,7 +42,7 @@ print(args)
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-model_pool = read_txt('./model_list.txt')
+model_pool = read_txt('./{}'.format(args.model_file))
 for model_name in model_pool:
     print(model_name)
 model_name = model_pool[args.model_index]
@@ -95,8 +96,12 @@ volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 # train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
 # test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
 
-train_fns = read_txt(DATA_DIR+'/neuron_train_list.txt')
-test_fns = read_txt(DATA_DIR+'/neuron_test_list.txt')
+if dataset == 'neuron_trn_tst':
+		train_fns = read_txt(DATA_DIR+'/neuron_train_list.txt')
+		test_fns = read_txt(DATA_DIR+'/neuron_test_list.txt')
+elif dataset == 'neuron_trn_tst_v2':
+		train_fns = read_txt(DATA_DIR+'/neuron_train_v2.txt')
+		test_fns = read_txt(DATA_DIR+'/neuron_test_v2.txt')
 
 ## volum formulation
 def extract_vol(vol):
@@ -386,6 +391,7 @@ for subset in subsets:
 						mse_score = np.mean(np.square(pr_vol-gt_vol))
 						psnr_score = calculate_psnr(pr_vol, gt_vol)
 						cor_score = calculate_pearsonr(pr_vol, gt_vol)
+						print(pr_vol.shape, gt_vol.shape)
 						mse_scores.append(mse_score); psnr_scores.append(psnr_score); cor_scores.append(cor_score)
 						print('{}-FL1: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score, cor_score, mse_score))
 				if fl_ch == 'fl12' or fl_ch == 'fl2':
@@ -394,6 +400,7 @@ for subset in subsets:
 						mse_score2 = np.mean(np.square(pr_vol2-gt_vol2))
 						psnr_score2 = calculate_psnr(pr_vol2, gt_vol2)
 						cor_score2 = calculate_pearsonr(pr_vol2, gt_vol2)
+						print(pr_vol2.shape, gt_vol2.shape)
 						mse2_scores.append(mse_score2); psnr2_scores.append(psnr_score2); cor2_scores.append(cor_score2)
 						print('{}-FL2: psnr {:.4f}, cor {:.4f}, mse {:.4f}\n'.format(vol_fn, psnr_score2, cor_score2, mse_score2))
 

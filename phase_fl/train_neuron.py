@@ -32,6 +32,7 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
 parser.add_argument("--dataset", type=str, default = 'neuron_wbx1')
 parser.add_argument("--subset", type=str, default = 'train')
+parser.add_argument("--extra", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 10)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--ch_in", type=int, default = 3)
@@ -52,8 +53,8 @@ args = parser.parse_args()
 print(args)
 
 ## screen the fl1
-model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}-Scr'.format(args.net_type, args.backbone, args.pre_train,\
-		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best_select)
+model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}-Scr-extra-{}'.format(args.net_type, args.backbone, args.pre_train,\
+		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best_select, args.extra)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -105,6 +106,7 @@ class Dataset:
             images_dir, 
             masks_dir1,
             masks_dir2,
+            extra = True,
             fl_ch = None,
             scale = 1.0,
             channels = [3,3],
@@ -117,8 +119,11 @@ class Dataset:
         if (not fl_ch == 'fl2'):
         		screen_set = ['T-33', 'T-34', 'T-35', 'T-36', 'T-37', 'T-38', 
         									'T-39']
-        									
         		id_list = [id for id in id_list if not 'T-{}'.format(id.split('-')[1]) in screen_set]
+        if not extra:
+        		screen_set = ['T-33', 'T-34', 'T-35', 'T-36', 'T-37', 'T-38', 
+        									'T-39', 'T-40', 'T-41','T-42', 'T-43','T-44']
+        		id_list = [id for id in id_list if not 'T-{}'.format(id.split('-')[1]) in screen_set]        
         if nb_data ==None:
             self.ids = id_list
         else:
@@ -341,6 +346,7 @@ train_dataset = Dataset(
     x_train_dir, 
     y1_train_dir,
     y2_train_dir,
+    extra = args.extra,
     fl_ch = args.fl_ch,
     channels = [args.ch_in, args.ch_out],
     scale = args.scale,
@@ -354,6 +360,7 @@ valid_dataset = Dataset(
     x_valid_dir, 
     y1_valid_dir,
     y2_valid_dir,
+    extra = args.extra,
     fl_ch = args.fl_ch,
     scale = args.scale,
     channels = [args.ch_in, args.ch_out],

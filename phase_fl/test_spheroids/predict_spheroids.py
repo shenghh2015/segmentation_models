@@ -33,6 +33,7 @@ model_root_folder = '/data/models_fl/spheroid_models/'
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--model_file", type=str, default = 'model_list.txt')
 parser.add_argument("--epoch", type=int, default = -1)
 parser.add_argument("--save", type=str2bool, default = False)
 parser.add_argument("--train", type=str2bool, default = False)
@@ -41,7 +42,7 @@ print(args)
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-model_pool = read_txt('./model_list.txt')
+model_pool = read_txt('./{}'.format(args.model_file))
 for model_name in model_pool:
     print(model_name)
 model_name = model_pool[args.model_index]
@@ -84,17 +85,24 @@ for v in range(len(splits)):
 
 # DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
 DATA_DIR = '/data/datasets/spheroids_infer_x1'
-if dataset == 'neuron_wbx1' or dataset == 'neuron_trn_tst' or dataset == 'spheroids_dataset_x1':
-    val_dim = 1760  # 1744
-    offset = 8
+
+val_dim = 1760  # 1744
+offset = 8
+# if dataset == 'neuron_wbx1' or dataset == 'neuron_trn_tst' or dataset == 'spheroids_dataset_x1':
+#     val_dim = 1760  # 1744
+#     offset = 8
 
 volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 
 # train_fns = read_txt(DATA_DIR+'/train_sample_list.txt')
 # test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
 
-train_fns = read_txt(DATA_DIR+'/train_list.txt')
-test_fns = read_txt(DATA_DIR+'/test_list.txt')
+if dataset == 'spheroids_dataset_x1':
+		train_fns = read_txt(DATA_DIR+'/train_list.txt')
+		test_fns = read_txt(DATA_DIR+'/test_list.txt')
+elif dataset == 'spheroids_v3':
+		train_fns = read_txt(DATA_DIR+'/spheroids_v3_train.txt')
+		test_fns = read_txt(DATA_DIR+'/spheroids_v3_test.txt')
 
 ## volum formulation
 def extract_vol(vol):
