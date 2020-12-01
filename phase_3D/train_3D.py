@@ -99,7 +99,7 @@ class Dataset:
         vol_shp = mask.shape
         x_bd = [0,vol_shp[0]-hsizes[0]]
         y_bd = [0,vol_shp[1]-hsizes[1]]
-        z_bd = [20,70-hsizes[2]]
+        z_bd = [20,90-hsizes[2]]
         xi = random.randint(x_bd[0], x_bd[1])
         yi = random.randint(y_bd[0], y_bd[1])
         zi = random.randint(z_bd[0], z_bd[1])
