@@ -17,4 +17,4 @@
 
 python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 32 --epoch 10000 --batch_size 3 --lr 5e-6 --gpu 7
 python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 32 --epoch 10000 --batch_size 3 --lr 5e-6 --gpu 6 --scale 100
-python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 64 --epoch 10000 --batch_size 4 --lr 5e-6 --gpu 5
+python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 48 --epoch 10000 --batch_size 3 --lr 1e-5 --gpu 5 --scale 10
