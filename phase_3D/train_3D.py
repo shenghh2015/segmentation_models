@@ -99,7 +99,7 @@ class Dataset:
         vol_shp = mask.shape
         x_bd = [0,vol_shp[0]-hsizes[0]]
         y_bd = [0,vol_shp[1]-hsizes[1]]
-        z_bd = [20, 80-hsizes[2]]
+        z_bd = [20,70-hsizes[2]]
         xi = random.randint(x_bd[0], x_bd[1])
         yi = random.randint(y_bd[0], y_bd[1])
         zi = random.randint(z_bd[0], z_bd[1])
@@ -250,7 +250,7 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 								ph_vols.append(ph_vol); fl_gts.append(fl_gt); fl_prs.append(fl_pr)
 						ph_vols = np.stack(ph_vols).squeeze()
 						fl_gts = np.stack(fl_gts).squeeze()
-						fl_prs = np.stack(fl_prs).squeeze(); print('max voxel value:{:.2f}'.format(fl_prs.max()))
+						fl_prs = np.stack(fl_prs).squeeze(); print('\n max voxel value:{:.2f}'.format(fl_prs.max()))
 						print(ph_vols.shape)
 						save_images(model_folder+'/phase_{}.png'.format(epoch), ph_vols)
 						save_images(model_folder+'/gt_{}.png'.format(epoch), fl_gts*255./scale)
