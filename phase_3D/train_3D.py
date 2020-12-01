@@ -171,7 +171,7 @@ BATCH_SIZE, EPOCHS, LR, decay = args.batch_size, args.epoch, args.lr, args.decay
 levels, filters = args.levels, args.filters
 model_name = '3d-set-{}-dim-{}-dep-{}-val_dim-{}-val_dep-{}-bz-{}-lr-{}-level-{}-filters-{}-ep-{}-decay-{}-scale-{}'.format(dataset,
 							dim, val_dep, val_dim, val_dep, BATCH_SIZE, LR, levels, filters, EPOCHS, decay, scale)
-model_folder = '/data/3d_models/{}'.format(model_name) if args.docker else './3d_models/{}'.format(model_name)
+model_folder = '/data/3d_models/{}/{}'.format(dataset, model_name) if args.docker else './3d_models/{}/{}'.format(dataset, model_name)
 generate_folder(model_folder)
 
 ## network architecture
