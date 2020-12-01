@@ -19,6 +19,14 @@ def save_phase_fl_history(file_dir, history):
 	np.savetxt(file_dir+'/train_psnr.txt', history.history['psnr'])
 	np.savetxt(file_dir+'/val_psnr.txt', history.history['val_psnr'])
 
+def save_history_for_callback(file_dir, history):
+	np.savetxt(file_dir+'/train_loss.txt', history['loss'])
+	np.savetxt(file_dir+'/val_loss.txt', history['val_loss'])
+	np.savetxt(file_dir+'/train_psnr.txt', history['psnr'])
+	np.savetxt(file_dir+'/val_psnr.txt', history['val_psnr'])
+	np.savetxt(file_dir+'/train_pearson.txt', history['pearson'])
+	np.savetxt(file_dir+'/val_pearson.txt', history['val_pearson'])
+
 # plot training and validation loss
 def plot_history(file_name, history):
 	import matplotlib.pyplot as plt
@@ -61,6 +69,36 @@ def plot_history_flu(file_name, history):
 	ax[1].plot(history.history['psnr']);ax[1].plot(history.history['val_psnr'])
 	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
 	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
+# plot for phase -> fluo validation loss
+def plot_history_flu2(file_name, history):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 1,3,4
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	ax[0].plot(history.history['loss']);ax[0].plot(history.history['val_loss'])
+	ax[0].set_ylabel('MSE');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
+	ax[1].plot(history.history['psnr']);ax[1].plot(history.history['val_psnr'])
+	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	ax[2].plot(history.history['pearson']);ax[2].plot(history.history['val_pearson'])
+	ax[2].set_ylabel('pearson');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
+def plot_history_for_callback(file_name, history):
+	import matplotlib.pyplot as plt
+	from matplotlib.backends.backend_agg import FigureCanvasAgg
+	from matplotlib.figure import Figure
+	rows, cols, size = 1,3,4
+	fig = Figure(tight_layout=True,figsize=(size*cols, size*rows)); ax = fig.subplots(rows,cols)
+	ax[0].plot(history['loss']);ax[0].plot(history['val_loss'])
+	ax[0].set_ylabel('MSE');ax[0].set_xlabel('epochs');ax[0].legend(['train','valid'])
+	ax[1].plot(history['psnr']);ax[1].plot(history['val_psnr'])
+	ax[1].set_ylabel('PSNR');ax[1].set_xlabel('epochs');ax[1].legend(['train','valid'])
+	ax[2].plot(history['pearson']);ax[2].plot(history['val_pearson'])
+	ax[2].set_ylabel('pearson');ax[2].set_xlabel('epochs');ax[2].legend(['train','valid'])
+	canvas = FigureCanvasAgg(fig); canvas.print_figure(file_name, dpi=80)
+
 
 ## for only 3-channel output
 def plot_flu_prediction(file_name, images, gt_maps, pr_maps, nb_images, rand_seed = 3):
