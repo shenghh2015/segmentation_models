@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import argparse
 from natsort import natsorted
 import random
-from model import unet_model_3d
+from model import unet_model_3d, unet_model_ds3d
 
 from helper_function import plot_history_for_callback, save_history_for_callback
 
@@ -34,11 +34,11 @@ parser.add_argument("--levels", type=int, default = 5)
 parser.add_argument("--dim", type=int, default = 256)
 parser.add_argument("--dep", type=int, default = 16)
 parser.add_argument("--val_dim", type=int, default = 256)
-parser.add_argument("--val_dep", type=int, default = 32)
+parser.add_argument("--val_dep", type=int, default = 16)
 parser.add_argument("--epoch", type=int, default = 10)
-parser.add_argument("--batch_size", type=int, default = 3)
-parser.add_argument("--lr", type=float, default = 5e-6)
-parser.add_argument("--scale", type=float, default = 1.0)
+parser.add_argument("--batch_size", type=int, default = 1)
+parser.add_argument("--lr", type=float, default = 1e-6)
+parser.add_argument("--scale", type=float, default = 10.0)
 parser.add_argument("--decay", type=float, default = 0.8)
 args = parser.parse_args()
 
@@ -134,11 +134,12 @@ class Dataloder(tf.keras.utils.Sequence):
         shuffle: Boolean, if `True` shuffle image indexes each epoch.
     """
     
-    def __init__(self, dataset, batch_size=1, shuffle=False):
+    def __init__(self, dataset, batch_size=1, levels = 5, shuffle=False):
         self.dataset = dataset
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.indexes = np.arange(len(dataset))
+        self.levels = levels
 
         self.on_epoch_end()
 
@@ -153,8 +154,13 @@ class Dataloder(tf.keras.utils.Sequence):
         
         # transpose list of lists
         batch = [np.stack(samples, axis=0) for samples in zip(*data)]
-        
-        return (batch[0], batch[1])
+        # low resolution ground truths
+        batch_ys = []
+        for i in range(levels-1,0,-1):
+        		stride = pow(2,i)
+        		batch_ys.append(batch[1][:,:,::stride,::stride,:])
+        batch_ys.append(batch[1])
+        return (batch[0], batch_ys)
     
     def __len__(self):
         """Denotes the number of batches per epoch"""
@@ -169,13 +175,13 @@ class Dataloder(tf.keras.utils.Sequence):
 dim, dep, val_dim, val_dep, scale = args.dim, args.dep, args.val_dim, args.val_dep, args.scale
 BATCH_SIZE, EPOCHS, LR, decay = args.batch_size, args.epoch, args.lr, args.decay
 levels, filters = args.levels, args.filters
-model_name = '3d-set-{}-dim-{}-dep-{}-val_dim-{}-val_dep-{}-bz-{}-lr-{}-level-{}-filters-{}-ep-{}-decay-{}-scale-{}'.format(dataset,
+model_name = 'ds3d-set-{}-dim-{}-dep-{}-val_dim-{}-val_dep-{}-bz-{}-lr-{}-level-{}-filters-{}-ep-{}-decay-{}-scale-{}'.format(dataset,
 							dim, val_dep, val_dim, val_dep, BATCH_SIZE, LR, levels, filters, EPOCHS, decay, scale)
 model_folder = '/data/3d_models/{}/{}'.format(dataset, model_name) if args.docker else './3d_models/{}/{}'.format(dataset, model_name)
 generate_folder(model_folder)
 
 ## network architecture
-model = unet_model_3d(input_shape = (1, None, None, None), n_base_filters=filters, pool_size=(2, 2, 1), depth = levels)
+model = unet_model_ds3d(input_shape = (1, None, None, None), n_base_filters=filters, pool_size=(2, 2, 1), depth = levels)
 
 ## testing training dataset
 train_dataset = Dataset(X_dir, Y_dir, trn_fns, scale = scale, hsizes = [dim, dim, dep])
@@ -184,6 +190,8 @@ print(train_dataset[0][0].shape, train_dataset[0][1].shape)
 print(valid_dataset[0][0].shape, valid_dataset[0][1].shape)
 train_dataloader = Dataloder(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 valid_dataloader = Dataloder(valid_dataset, batch_size=1, shuffle=False)
+print('number of outputs: {}'.format(len(model.outputs)))
+print('number of GTs per input: {}'.format(len(train_dataloader[0][1])))
 
 from tensorflow.keras import backend as K
 def pearson(y_true, y_pred):
@@ -241,16 +249,17 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 										self.history[key] = []
 								self.history[key].append(logs[key])
 				if epoch%5 == 0:
-						plot_history_for_callback(model_folder+'/train_history.png', self.history)
-						save_history_for_callback(model_folder, self.history)
+						plot_history_for_callback(model_folder+'/train_history.png', self.history, ds = True)
+						save_history_for_callback(model_folder, self.history, ds = True)
 						ph_vols, fl_gts, fl_prs = [], [], []
 						for i in range(len(valid_dataloader)):
 								ph_vol, fl_gt = valid_dataloader[i]
 								fl_pr = self.model.predict(ph_vol)
-								ph_vols.append(ph_vol); fl_gts.append(fl_gt); fl_prs.append(fl_pr)
+								ph_vols.append(ph_vol); fl_gts.append(fl_gt[-1]); fl_prs.append(fl_pr[-1])
 						ph_vols = np.stack(ph_vols).squeeze()
 						fl_gts = np.stack(fl_gts).squeeze()
-						fl_prs = np.stack(fl_prs).squeeze(); print('\n max voxel value:{:.2f}'.format(fl_prs.max()))
+						fl_prs = np.stack(fl_prs).squeeze()
+						print('\nGT: [{:.2f},{:.2f}], Pr: [{:.2f},{:.2f}]'.format(fl_gts.min(),fl_gts.max(),fl_prs.min(),fl_prs.max()))
 						print(ph_vols.shape)
 						save_images(model_folder+'/epoch-{}_ph.png'.format(epoch), ph_vols)
 						save_images(model_folder+'/epoch-{}_gt.png'.format(epoch), fl_gts*255./scale)

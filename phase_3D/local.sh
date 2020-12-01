@@ -15,6 +15,11 @@
 # parser.add_argument("--decay", type=float, default = 0.8)
 # args = parser.parse_args()
 
+## Nov 30, 2020
 python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 32 --epoch 10000 --batch_size 3 --lr 5e-6 --gpu 7
 python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 32 --epoch 10000 --batch_size 3 --lr 5e-6 --gpu 6 --scale 100
 python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 48 --epoch 10000 --batch_size 3 --lr 1e-5 --gpu 5 --scale 10
+
+## Dec. 1, 2020
+python train_3D.py --docker False --filters 16 --levels 5 --dim 512 --dep 16 --val_dim 512 --val_dep 48 --epoch 10000 --batch_size 3 --lr 1e-6 --gpu 7 --scale 10
+python train_3D.py --docker False --filters 32 --levels 5 --dim 256 --dep 16 --val_dim 256 --val_dep 48 --epoch 10000 --batch_size 3 --lr 1e-6 --gpu 4 --scale 10
