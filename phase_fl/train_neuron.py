@@ -377,7 +377,7 @@ print(train_dataloader[0][1].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, train_dim, train_dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, train_dim, train_dim, n_classes)
 
-model_folder = '/data/models_fl/{}'.format(model_name) if args.docker else './models/phase_fl/{}'.format(model_name)
+model_folder = '/data/2d_models/{}/{}'.format(args.dataset, model_name) if args.docker else './2d_models/{}/{}'.format(args.dataset, model_name)
 generate_folder(model_folder)
 
 class HistoryPrintCallback(tf.keras.callbacks.Callback):
