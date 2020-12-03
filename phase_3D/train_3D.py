@@ -258,7 +258,7 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 
 # define callbacks for learning rate scheduling and best checkpoints saving
 callbacks = [
-    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model-{epoch:03d}.h5', monitor='val_final_pearson', save_weights_only=True, save_best_only=True, mode='max'),
+    tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model-{epoch:03d}.h5', monitor='val_pearson', save_weights_only=True, save_best_only=True, mode='max'),
     tf.keras.callbacks.ReduceLROnPlateau(factor=decay),
 		HistoryPrintCallback(),
 ]
