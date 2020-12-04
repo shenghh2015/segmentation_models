@@ -10,7 +10,7 @@ import argparse
 from natsort import natsorted
 # sys.path.append('../')
 import segmentation_models_v1 as sm
-from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet, ResUnet
+from other_models import unet1
 sm.set_framework('tf.keras')
 
 from helper_function import plot_history_flu2, save_phase_fl_history, plot_flu_prediction, plot_set_prediction
@@ -28,9 +28,9 @@ def generate_folder(folder_name):
 parser = argparse.ArgumentParser()
 parser.add_argument("--gpu", type=str, default = '0')
 parser.add_argument("--docker", type=str2bool, default = True)
-parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
-parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
-parser.add_argument("--dataset", type=str, default = 'neuron_wbx1')
+parser.add_argument("--net_type", type=str, default = 'unet1')  #Unet, Linknet, PSPNet, FPN
+parser.add_argument("--backbone", type=str, default = 'xxx')
+parser.add_argument("--dataset", type=str, default = 'spheroids_v4')
 parser.add_argument("--subset", type=str, default = 'train')
 parser.add_argument("--extra", type=str2bool, default = True)
 parser.add_argument("--epoch", type=int, default = 10)
@@ -48,12 +48,12 @@ parser.add_argument("--lr", type=float, default = 5e-4)
 parser.add_argument("--decay", type=float, default = 0.8)
 parser.add_argument("--delta", type=float, default = 10)
 parser.add_argument("--best_select", type=str2bool, default = True)  ## cancel the selection of best model
-parser.add_argument("--pre_train", type=str2bool, default = True)
+parser.add_argument("--bn", type=str2bool, default = True)
 args = parser.parse_args()
 print(args)
 
 ## screen the fl1
-model_name = 'Cor-FL1_FL2-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}-Scr-extra-{}'.format(args.net_type, args.backbone, args.pre_train,\
+model_name = 'Cor-FL1_FL2-net-{}-bone-{}-bn-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-subset-{}-loss-{}-act-{}-scale-{}-decay-{}-delta-{}-chi-{}-cho-{}-chf-{}-bselect-{}-Scr-extra-{}'.format(args.net_type, args.backbone, args.bn,\
 		 args.epoch, args.batch_size, args.lr, args.dim, args.train, args.rot, args.dataset, args.subset, args.loss, args.act_fun, args.scale, args.decay, args.delta, args.ch_in, args.ch_out, args.fl_ch, args.best_select, args.extra)
 print(model_name)
 
@@ -299,7 +299,7 @@ LR = args.lr
 EPOCHS = args.epoch
 
 # processing configuration
-preprocess_input = sm.get_preprocessing(BACKBONE)
+# preprocess_input = sm.get_preprocessing(BACKBONE)
 
 # define network parameters
 n_classes = args.ch_out if args.fl_ch == 'fl1' or args.fl_ch == 'fl2' else 2
@@ -308,9 +308,10 @@ activation = '{}'.format(args.act_fun)
 #create model
 net_func = globals()[args.net_type]
 
-encoder_weights='imagenet' if args.pre_train else None
+# encoder_weights='imagenet' if args.pre_train else None
 
-model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+# model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation)
+model = unet1(input_size = (None,None,3),nb_classes=n_classes, base_filters = 16, bn = args.bn)
 
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
@@ -333,6 +334,7 @@ def pearson(y_true, y_pred):
     r_den = K.sqrt(tf.multiply(K.sum(K.square(xm)), K.sum(K.square(ym))))
     r = r_num / r_den
 
+#     r = K.maximum(K.minimum(r, 1.0), -1.0)
     return r
 
 metrics = [sm.metrics.PSNR(max_val=args.scale), pearson]
@@ -351,7 +353,7 @@ train_dataset = Dataset(
     scale = args.scale,
     nb_data=args.train, 
     augmentation=get_training_augmentation(train_dim, args.rot),
-    preprocessing=get_preprocessing(preprocess_input),
+    preprocessing=None,
 )
 
 # Dataset for validation images
@@ -364,7 +366,7 @@ valid_dataset = Dataset(
     scale = args.scale,
     channels = [args.ch_in, args.ch_out],
     augmentation=get_validation_augmentation(val_dim),
-    preprocessing=get_preprocessing(preprocess_input),
+    preprocessing=None,
 )
 
 train_dataloader = Dataloder(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -412,7 +414,7 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 				if epoch%5 == 0:
 						plot_history_for_callback(model_folder+'/train_history.png', self.history)
 						save_history_for_callback(model_folder, self.history)
-						img_vols, gt_vols, pr_vols = [],[],[]
+						img_vols, gt_vols, pr_vols = [],[], []
 						for i in range(0, len(valid_dataset),int(len(valid_dataset)/64)):
 								img_vols.append(valid_dataloader[i][0])
 								gt_vols.append(valid_dataloader[i][1])
@@ -423,9 +425,6 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 						save_images(model_folder+'/epoch-{}-img.png'.format(epoch), img_vols)
 						save_images(model_folder+'/epoch-{}-gt.png'.format(epoch), gt_vols/args.scale*255)
 						save_images(model_folder+'/epoch-{}-pr.png'.format(epoch), pr_vols/args.scale*255)
-				
-#     		if epoch%5 == 0:
-#     				plot_history_for_callback(model_folder+'/train_history.png', logs)
 
 # define callbacks for learning rate scheduling and best checkpoints saving
 if not args.best_select:

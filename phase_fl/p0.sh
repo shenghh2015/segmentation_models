@@ -16,4 +16,6 @@
 # python phase_fl1_fl2_train2.py --net_type Unet --backbone efficientnetb3 --dataset neuron_trn_tst --subset train --epoch 100 --dim 512 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --pre_train True --gpu 0 --fl_ch fl12 --ch_in 3 --ch_out 3
 # python train_model.py --net_type Unet --backbone efficientnetb0 --dataset spheroids_dataset_x1 --subset train --epoch 100 --dim 512 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --pre_train True --gpu 2 --fl_ch fl12 --ch_in 3 --ch_out 3
 # python train_neuron.py --net_type Unet --backbone efficientnetb0 --dataset neuron_trn_tst_v2 --subset train --epoch 2 --dim 320 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --pre_train True --gpu 2 --fl_ch fl1 --ch_in 3 --ch_out 3
-python train_neuron.py --net_type Unet --backbone efficientnetb3 --dataset neuron_trn_tst_v2 --subset train --epoch 400 --dim 512 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --pre_train True --gpu 0 --fl_ch fl12 --ch_in 3 --ch_out 3
+# python train_neuron.py --net_type Unet --backbone efficientnetb3 --dataset neuron_trn_tst_v2 --subset train --epoch 400 --dim 512 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --pre_train True --gpu 0 --fl_ch fl12 --ch_in 3 --ch_out 3
+
+python train_unet.py --net_type unet1 --backbone xxx --dataset neuron_trn_tst_v2 --subset train --epoch 400 --dim 512 --loss mse --batch_size 4 --rot 50 --lr 1e-4 --bn True --gpu 0 --fl_ch fl12 --ch_in 3 --ch_out 3

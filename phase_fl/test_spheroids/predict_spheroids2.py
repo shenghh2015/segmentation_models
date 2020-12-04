@@ -28,8 +28,6 @@ def read_txt(txt_dir):
 def str2bool(value):
     return value.lower() == 'true'
 
-model_root_folder = '/data/2d_models/spheroids_v3/'
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_index", type=int, default = 0)
 parser.add_argument("--gpu", type=str, default = '0')
@@ -46,7 +44,6 @@ model_pool = read_txt('./{}'.format(args.model_file))
 for model_name in model_pool:
     print(model_name)
 model_name = model_pool[args.model_index]
-model_folder = model_root_folder+ model_name
 
 ## parse model name
 splits = model_name.split('-')
@@ -83,6 +80,9 @@ for v in range(len(splits)):
 	elif splits[v] == 'best':
 		best_flag = str2bool(splits[v+1])
 
+model_root_folder = '/data/2d_models/{}/'.format(dataset)
+model_folder = model_root_folder+ model_name
+
 # DATA_DIR = '/data/datasets/neuron_wo_beads_x{}'.format(dataset[-1])
 DATA_DIR = '/data/datasets/spheroids_infer_x1'
 
@@ -101,6 +101,9 @@ if dataset == 'spheroids_dataset_x1':
 		train_fns = read_txt(DATA_DIR+'/train_list.txt')
 		test_fns = read_txt(DATA_DIR+'/test_list.txt')
 elif dataset == 'spheroids_v3':
+		train_fns = read_txt(DATA_DIR+'/spheroids_v3_train.txt')
+		test_fns = read_txt(DATA_DIR+'/spheroids_v3_test.txt')
+elif dataset == 'spheroids_v4':
 		train_fns = read_txt(DATA_DIR+'/spheroids_v3_train.txt')
 		test_fns = read_txt(DATA_DIR+'/spheroids_v3_test.txt')
 
