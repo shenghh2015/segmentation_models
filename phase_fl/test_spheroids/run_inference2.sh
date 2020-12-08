@@ -1,1 +1,2 @@
-python predict_spheroids.py --gpu 1 --model_index 5 --save False --epoch 20
+python pred_exp_spheroid.py --gpu 2 --model_file spheroid_list.txt --model_index 0 --epoch 101
+python pred_exp_spheroid.py --gpu 2 --model_file spheroid_list.txt --model_index 1 --epoch 165
