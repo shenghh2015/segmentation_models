@@ -32,7 +32,7 @@ parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, P
 parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
 parser.add_argument("--dataset", type=str, default = 'neuron_wbx1')
 parser.add_argument("--subset", type=str, default = 'train')
-parser.add_argument("--extra", type=str2bool, default = True)
+parser.add_argument("--extra", type=str2bool, default = False)
 parser.add_argument("--epoch", type=int, default = 10)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--ch_in", type=int, default = 3)

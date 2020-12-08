@@ -52,5 +52,13 @@ python train_neuron.py --net_type Unet --backbone efficientnetb7 --dataset spher
 python train_neuron.py --net_type Unet --backbone efficientnetb7 --dataset spheroids_v4 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 3 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
 
 ## Dec. 7, 2020
-python train_neuron.py --net_type Unet --backbone efficientnetb7 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 4 --fl_ch fl1 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
-python train_neuron.py --net_type Unet --backbone efficientnetb7 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 5 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb7 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 4 --fl_ch fl1 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb7 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 5 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb7 --dataset neuron_trn_tst_v3 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 2 --fl_ch fl1 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb7 --dataset neuron_trn_tst_v3 --subset train --epoch 800 --dim 512 --loss mse --batch_size 6 --rot 50 --lr 5e-4 --pre_train True --gpu 3 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 50. --docker False
+
+python train_exp.py --net_type Unet --backbone efficientnetb6 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 2 --rot 50 --lr 5e-4 --pre_train True --gpu 0 --fl_ch fl1 --ch_in 3 --ch_out 1 --best_select True --scale 1. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb6 --dataset spheroids_v6 --subset train --epoch 800 --dim 512 --loss mse --batch_size 2 --rot 50 --lr 5e-4 --pre_train True --gpu 1 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 1. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb6 --dataset neuron_trn_tst_v3 --subset train --epoch 800 --dim 512 --loss mse --batch_size 2 --rot 50 --lr 5e-4 --pre_train True --gpu 2 --fl_ch fl1 --ch_in 3 --ch_out 1 --best_select True --scale 1. --docker False
+python train_exp.py --net_type Unet --backbone efficientnetb6 --dataset neuron_trn_tst_v3 --subset train --epoch 800 --dim 512 --loss mse --batch_size 2 --rot 50 --lr 5e-4 --pre_train True --gpu 7 --fl_ch fl2 --ch_in 3 --ch_out 1 --best_select True --scale 1. --docker False
+
