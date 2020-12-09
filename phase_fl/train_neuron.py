@@ -26,7 +26,7 @@ def generate_folder(folder_name):
 		os.system('mkdir -p {}'.format(folder_name))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--gpu", type=str, default = '0')
+parser.add_argument("--gpu", type=str, default = '2')
 parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--net_type", type=str, default = 'Unet')  #Unet, Linknet, PSPNet, FPN
 parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
@@ -414,10 +414,10 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 						save_history_for_callback(model_folder, self.history)
 						img_vols, gt_vols, pr_vols = [],[],[]
 						for i in range(0, len(valid_dataset),int(len(valid_dataset)/64)):
-								img_vols.append(valid_dataloader[i][0])
+								img_vols.append(io.imread(valid_dataloader.dataset.images_fps[i]))
 								gt_vols.append(valid_dataloader[i][1])
 								pr_vols.append(self.model.predict(valid_dataloader[i]))
-						img_vols = np.concatenate(img_vols, axis = 0)
+						img_vols = np.stack(img_vols, axis = 0)
 						gt_vols = np.concatenate(gt_vols, axis = 0)
 						pr_vols = np.concatenate(pr_vols, axis = 0)
 						save_images(model_folder+'/epoch-{}-img.png'.format(epoch), img_vols)
