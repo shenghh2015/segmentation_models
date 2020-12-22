@@ -29,18 +29,19 @@ def str2bool(value):
     return value.lower() == 'true'
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_index", type=int, default = 0)
+parser.add_argument("--model_index", type=int, default = 1)
 parser.add_argument("--gpu", type=str, default = '0')
-parser.add_argument("--model_file", type=str, default = 'model_list.txt')
-parser.add_argument("--epoch", type=int, default = -1)
+parser.add_argument("--model_file", type=str, default = 'spheroid_list.txt')
+parser.add_argument("--epoch", type=int, default = 145)
 parser.add_argument("--save", type=str2bool, default = False)
 parser.add_argument("--train", type=str2bool, default = False)
 args = parser.parse_args()
 print(args)
 
+model_file = args.model_file
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
-model_pool = read_txt('./{}'.format(args.model_file))
+model_pool = read_txt('./{}'.format(model_file))
 for model_name in model_pool:
     print(model_name)
 model_name = model_pool[args.model_index]
@@ -362,10 +363,8 @@ for subset in subsets:
 				images = np.stack(images); gt_masks = np.stack(gt_masks)
 
 				# scale to [0,255]
-				gt_masks = np.uint8(gt_masks/scale*255); gt_masks = gt_masks.squeeze()
+				gt_masks = gt_masks/scale*255; gt_masks = gt_masks.squeeze()
 				pr_masks = pr_masks/scale*255; pr_masks = pr_masks.squeeze()
-				pr_masks = np.uint8(np.clip(pr_masks, 0, 255))
-				images = np.uint8(images*255)
 
 				# obtain the images, GT, and prediction
 				ph_vol = extract_vol(images)
@@ -424,20 +423,20 @@ for subset in subsets:
 								print('FL2: {}'.format(pr_vol2.shape))
 
 				# save prediction examples
-				prediction_dir = model_folder+'/pred_examples'
-				generate_folder(prediction_dir)
-				plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
-				plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
-				if ph_vol.shape[0]>150:
-						z_index = 158; x_index = 250
-				else:
-						z_index = 60; x_index = 250
-				if fl_ch == 'fl12' or fl_ch == 'fl1':			
-						plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
-				if fl_ch == 'fl12' or fl_ch == 'fl2':
-						plot_prediction_zx(plot_fig_file2, ph_vol, gt_vol2, pr_vol2, z_index, x_index)
+# 				prediction_dir = model_folder+'/pred_examples'
+# 				generate_folder(prediction_dir)
+# 				plot_fig_file = prediction_dir+'/{}_fl1.png'.format(vol_fn)
+# 				plot_fig_file2 = prediction_dir+'/{}_fl2.png'.format(vol_fn)
+# 				if ph_vol.shape[0]>150:
+# 						z_index = 158; x_index = 250
+# 				else:
+# 						z_index = 60; x_index = 250
+# 				if fl_ch == 'fl12' or fl_ch == 'fl1':
+# 						plot_prediction_zx(plot_fig_file, ph_vol, gt_vol, pr_vol, z_index, x_index)
+# 				if fl_ch == 'fl12' or fl_ch == 'fl2':
+# 						plot_prediction_zx(plot_fig_file2, ph_vol, gt_vol2, pr_vol2, z_index, x_index)
 
-		if fl_ch == 'fl12' or fl_ch == 'fl1':	
+		if fl_ch == 'fl12' or fl_ch == 'fl1':
 			mPSNR, mCor, mMSE = np.mean(psnr_scores), np.mean(cor_scores), np.mean(mse_scores)
 			print('Mean metrics on FL1: mPSNR {:.4f}, mCor {:.4f}, mMse {:.4f}\n'.format(mPSNR, mCor, mMSE))
 			fl1_txt_name = model_folder+'/{}_FL1_summary.txt'.format(subset) if (not best_flag) and (not os.path.exists(model_file)) else model_folder+'/{}_FL1_summary_{}.txt'.format(subset, epoch)

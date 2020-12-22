@@ -98,10 +98,12 @@ volume_fns = [fn for fn in os.listdir(DATA_DIR) if 'output' in fn]
 # test_fns = read_txt(DATA_DIR+'/test_sample_list.txt')
 
 dataset_dir = '/data/datasets/'
+print(dataset)
 if dataset == 'spheroids_v6':
 	train_fns = read_txt(os.path.join(dataset_dir, dataset,'train_list.txt'))
 	val_fns = read_txt(os.path.join(dataset_dir, dataset,'val_list.txt'))
 	test_fns = read_txt(os.path.join(dataset_dir, dataset,'test_list.txt'))
+	print('dataset: {}'.format(dataset))
 
 ## volum formulation
 def extract_vol(vol):
