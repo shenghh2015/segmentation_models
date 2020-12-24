@@ -1,5 +1,6 @@
 import os
 import cv2
+from skimage import io
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,17 +21,22 @@ def generate_folder(folder_name):
 	if not os.path.exists(folder_name):
 		os.system('mkdir -p {}'.format(folder_name))
 
+def read_txt(txt_dir):
+    lines = []
+    with open(txt_dir, 'r+') as f:
+        lines = [line.strip() for line in f.readlines()]
+    return lines
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--docker", type=str2bool, default = True)
 parser.add_argument("--gpu", type=str, default = '0')
-parser.add_argument("--net_type", type=str, default = 'DUNet')  #Unet, Linknet, PSPNet, FPN
-parser.add_argument("--backbone", type=str, default = 'efficientnetb3')
+parser.add_argument("--net_type", type=str, default = 'AtUnet')  #Unet, Linknet, PSPNet, FPN
+parser.add_argument("--backbone", type=str, default = 'efficientnetb0')
 parser.add_argument("--feat_version", type=int, default = None)
 parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--batch_size", type=int, default = 2)
-parser.add_argument("--dataset", type=str, default = 'live_dead')
-parser.add_argument("--ext", type=str2bool, default = False)
+parser.add_argument("--dataset", type=str, default = 'cycle_736x752')
 parser.add_argument("--upsample", type=str, default = 'upsampling')
 parser.add_argument("--pyramid_agg", type=str, default = 'sum')
 parser.add_argument("--filters", type=int, default = 256)
@@ -41,41 +47,33 @@ parser.add_argument("--focal_weight", type=float, default = 1)
 parser.add_argument("--pre_train", type=str2bool, default = True)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
-parser.add_argument("--reduce_factor", type=float, default = 0.1)
+parser.add_argument("--reduce_factor", type=float, default = 1.0)
 args = parser.parse_args()
 print(args)
 
-model_name = 'single-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-ext-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}'.format(args.net_type,\
+model_name = 'net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.ext, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version)
+		 	args.train, args.rot, args.dataset, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
-if args.dataset == 'live_dead':
-	val_dim = 832 if not args.net_type == 'PSPNet' else 864
-	test_dim = val_dim; img_dim = 832
-	train_image_set = 'train_images2'
-	val_image_set = 'val_images2'
-	test_image_set = 'test_images2'
-elif args.dataset == 'cell_cycle_1984_v2' or args.dataset == 'cell_cycle_1984':
-	val_dim = 1984 if not args.net_type == 'PSPNet' else 2016
-	test_dim = val_dim; img_dim = 1984
-	train_image_set = 'train_images'
-	val_image_set = 'val_images'
-	test_image_set = 'test_images'
+if args.dataset == 'cycle_736x752':
+	val_dim1, val_dim2 = 736, 768
+	test_dim1, test_dim2 = 736, 768
+	dim1, dim2 = 736, 752
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './data/{}'.format(args.dataset)
-x_train_dir = os.path.join(DATA_DIR, train_image_set) if not args.ext else os.path.join(DATA_DIR, 'ext_train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_masks') if not args.ext else os.path.join(DATA_DIR, 'ext_train_masks')
 
-x_valid_dir = os.path.join(DATA_DIR, val_image_set)
-y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
+images_dir = DATA_DIR+'/images'
+masks_dir = DATA_DIR+'/masks'
 
-x_test_dir = os.path.join(DATA_DIR, test_image_set)
-y_test_dir = os.path.join(DATA_DIR, 'test_masks')
+train_fns = read_txt(os.path.join(DATA_DIR, 'train_list.txt'))
+val_fns = read_txt(os.path.join(DATA_DIR, 'valid_list.txt'))
+test_fns = read_txt(os.path.join(DATA_DIR, 'test_list.txt'))
 
-print(x_train_dir); print(x_valid_dir); print(x_test_dir)
+print('train:{}, valid:{}, test:{}'.format(len(train_fns),len(val_fns), len(test_fns)))
+
 # classes for data loading and preprocessing
 class Dataset:
     """CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
@@ -96,35 +94,35 @@ class Dataset:
     def __init__(
             self, 
             images_dir, 
-            masks_dir, 
+            masks_dir,
+            fn_list,
             classes=None,
             nb_data=None,
             augmentation=None, 
             preprocessing=None,
     ):
-        id_list = os.listdir(images_dir)
+        id_list = fn_list
         if nb_data ==None:
             self.ids = id_list
         else:
             self.ids = id_list[:int(min(nb_data,len(id_list)))]
-        #self.ids = os.listdir(images_dir)
         self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
         self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
-        #print(self.images_fps[:4]); print(self.masks_fps[:4])
         print(len(self.images_fps)); print(len(self.masks_fps))
         # convert str names to class values on masks
         self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
-        
         self.augmentation = augmentation
         self.preprocessing = preprocessing
     
     def __getitem__(self, i):
         
         # read data
-        image = cv2.imread(self.images_fps[i])
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        mask = cv2.imread(self.masks_fps[i], 0)
-#         print(np.unique(mask))
+        image = io.imread(self.images_fps[i])
+        mask = io.imread(self.masks_fps[i])
+        # image to RGB
+        image = np.uint8((image-image.min())*255/(image.max()-image.min()))
+        image = np.stack([image,image,image],axis =-1)
+        
         # extract certain classes from mask (e.g. cars)
         masks = [(mask == v) for v in self.class_values]
 #         print(self.class_values)
@@ -343,8 +341,9 @@ model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
 
 # Dataset for train images
 train_dataset = Dataset(
-    x_train_dir, 
-    y_train_dir, 
+    images_dir, 
+    masks_dir, 
+    train_fns,
     classes=CLASSES,
     nb_data=args.train,
     augmentation=get_training_augmentation(args.dim, args.rot),
@@ -356,10 +355,11 @@ if args.net_type == 'PSPNet':
 
 # Dataset for validation images
 valid_dataset = Dataset(
-    x_valid_dir, 
-    y_valid_dir, 
+    images_dir, 
+    masks_dir,
+    val_fns,
     classes=CLASSES, 
-    augmentation=get_validation_augmentation(val_dim),
+    augmentation=get_validation_augmentation(val_dim1),
     preprocessing=get_preprocessing(preprocess_input),
 )
 
@@ -371,7 +371,7 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, args.dim, args.dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, args.dim, args.dim, n_classes)
 
-model_folder = '/data/models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
+model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/{}'.format(model_name)
 generate_folder(model_folder)
 
 def concat_tile(im_list_2d):
@@ -449,80 +449,7 @@ history = model.fit_generator(
 )
 
 # save the training information
-plot_history(model_folder+'/train_history.png',history)
-record_dir = model_folder+'/train_dir'
-generate_folder(record_dir)
-save_history(record_dir, history)
-
-# evaluate model
-test_dataset = Dataset(
-    x_test_dir, 
-    y_test_dir, 
-    classes=CLASSES, 
-    augmentation=get_validation_augmentation(test_dim),
-    preprocessing=get_preprocessing(preprocess_input),
-)
-
-test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-if args.net_type == 'FPN':
-    model = net_func(BACKBONE, encoder_weights=encoder_weights, classes=n_classes, activation=activation, pyramid_aggregation = args.pyramid_agg)
-else:
-	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (test_dim, test_dim, 3), classes=n_classes, activation=activation, feature_version = args.feat_version,)
-model.compile(optimizer=optim, loss=total_loss, metrics = metrics)
-
-# load best weights
-model.load_weights(model_folder+'/best_model.h5')
-
-scores = model.evaluate_generator(test_dataloader)
-print("Loss: {:.5}".format(scores[0]))
-for metric, value in zip(metrics, scores[1:]):
-    print("mean {}: {:.5}".format(metric.__name__, value))
-
-# calculate the pixel-level classification performance
-pr_masks = model.predict(test_dataloader); pr_maps = np.argmax(pr_masks,axis=-1)
-gt_masks = []
-for i in range(len(test_dataset)):
-    _, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
-gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
-
-# crop 
-if args.net_type == 'PSPNet':
-	offset1, offset2 = int((test_dim-img_dim)/2), val_dim-int((test_dim-img_dim)/2)
-	gt_maps=gt_maps[:,offset1:offset2,offset1:offset2]
-	pr_maps=pr_maps[:,offset1:offset2,offset1:offset2]
-	print('PSP output: {}'.format(pr_maps.shape))
-
-y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
-cf_mat = confusion_matrix(y_true, y_pred)
-cf_mat_reord = np.zeros(cf_mat.shape)
-cf_mat_reord[1:,1:]=cf_mat[:3,:3];cf_mat_reord[0,1:]=cf_mat[3,0:3]; cf_mat_reord[1:,0]=cf_mat[0:3,3]
-cf_mat_reord[0,0] = cf_mat[3,3]
-print('Confusion matrix:')
-print(cf_mat_reord)
-prec_scores = []; recall_scores = []; f1_scores = []; iou_scores=[]
-for i in range(cf_mat.shape[0]):
-    prec_scores.append(precision(i,cf_mat_reord))
-    recall_scores.append(recall(i,cf_mat_reord))
-    f1_scores.append(f1_score(i,cf_mat_reord))
-print('Precision:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
-print('Recall:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
-# f1 score
-print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
-
-with open(model_folder+'/metric_summary.txt','w+') as f:
-	# save iou and dice
-	for metric, value in zip(metrics, scores[1:]):
-		f.write("mean {}: {:.5}\n".format(metric.__name__, value))
-	# save confusion matrix
-	f.write('confusion matrix:\n')
-	np.savetxt(f, cf_mat_reord, fmt='%-7d')
-	# save precision
-	f.write('precision:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
-	f.write('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
-	# save recall
-	f.write('recall:{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
-	f.write('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
-	# save f1-score
-	f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-	f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
+# plot_history(model_folder+'/train_history.png',history)
+# record_dir = model_folder+'/train_dir'
+# generate_folder(record_dir)
+# save_history(record_dir, history)
