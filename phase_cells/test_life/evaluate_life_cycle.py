@@ -8,7 +8,7 @@ import argparse
 import sys
 sys.path.append('../')
 import segmentation_models as sm
-from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN
+from segmentation_models_v1 import Unet, Linknet, PSPNet, FPN, AtUnet
 
 from helper_function import precision, recall, f1_score, iou_calculate, generate_folder
 from sklearn.metrics import confusion_matrix
@@ -84,7 +84,8 @@ for v in range(len(splits)):
 	elif splits[v] == 'ext':
 		ext_flag = True if splits[v+1] =='True' else False
 	elif splits[v] == 'fv':
-		feature_version = int(splits[v+1]); print('feature version:{}'.format(feature_version))	
+		if not splits[v+1] == 'None':
+			feature_version = int(splits[v+1]); print('feature version:{}'.format(feature_version))	
 			
 DATA_DIR = '/data/datasets/{}'.format(dataset)
 x_train_dir = os.path.join(DATA_DIR, 'train_images') if not ext_flag else os.path.join(DATA_DIR, 'ext_train_images')
@@ -334,7 +335,7 @@ for subset in subsets:
 	# f1 score
 	print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
 	print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
-	with open(result_dir+'/{}_summary.txt'.format(subset), 'w+') as f:
+	with open(result_dir+'/{}_summary_{}.txt'.format(subset, epoch), 'w+') as f:
 		# save iou and dice
 		f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}\n'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
 		f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}\n'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
