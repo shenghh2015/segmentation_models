@@ -21,4 +21,5 @@
 # parser.add_argument("--loss", type=str, default = 'focal+dice')
 # parser.add_argument("--reduce_factor", type=float, default = 0.1)
 # args = parser.parse_args()
-python train_unet.py --gpu 1 --epoch 400 --batch_size 6 --dataset cell_cycle_1984_v2 --ext True --rot 20 --lr 5e-4 --loss focal --bn True --reduce_factor 0.9
+# python train_unet.py --gpu 1 --epoch 400 --batch_size 6 --dataset cell_cycle_1984_v2 --ext True --rot 20 --lr 5e-4 --loss focal --bn True --reduce_factor 0.9
+python single_train_v6.py --net_type AtUnet --backbone efficientnetb4 --pre_train True --batch_size 8 --dim 512 --epoch 2400 --lr 5e-4 --dataset live_dead --ext False --train 1100 --gpu 0 --loss focal --filters 256 --upsample upsampling --ext False --reduce_factor 1.0 --bk 1.0 
