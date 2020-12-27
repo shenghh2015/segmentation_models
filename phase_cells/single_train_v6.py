@@ -331,6 +331,8 @@ elif args.loss =='focal+jaccard+dice':
 	total_loss = dice_loss + jaccard_loss+ (args.focal_weight * focal_loss)
 elif args.loss == 'focal':
 	total_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
+elif args.loss == 'CE':
+	total_loss = sm.losses.BinaryCELoss() if n_classes == 1 else sm.losses.CategoricalCELoss()
 # 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 # 	total_loss = dice_loss + (args.forcal_weight * focal_loss)
 # actulally total_loss can be imported directly from library, above example just show you how to manipulate with losses
