@@ -1,5 +1,6 @@
 import os
 import cv2
+from skimage import io
 import tensorflow as tf
 import numpy as np
 import random
@@ -40,7 +41,7 @@ epoch = epoch_list[index]
 
 print(model_name)
 print('Epoch:{}'.format(epoch))
-model_root_folder = '/data/LC_models/'
+model_root_folder = '/data/cycle_models/'
 nb_train_test = 200
 model_folder = model_root_folder+model_name
 
@@ -59,20 +60,11 @@ ext_flag = False
 feature_version = None
 for v in range(len(splits)):
 	if splits[v]=='set':
-		if splits[v+1] == 'dead':
-			dataset = 'live_'+splits[v+1]
-		if splits[v+1] == '1664':
-			dataset = 'live_dead_'+splits[v+1]
-			val_dim = 1664
-		if splits[v+1] == '1984':
-			dataset = 'cell_cycle_'+splits[v+1]
-			val_dim = 1984
-		if splits[v+1] == '1984_v2':
-			dataset = 'cell_cycle_'+splits[v+1]
-			val_dim = 1984
-		if splits[v+1] == 'cell_cycle_1984_v2':
+		if splits[v+1] == 'cycle_736x752':
 			dataset = splits[v+1]
-			val_dim = 1984
+			val_dim1, val_dim2 = 736, 768
+			test_dim1, test_dim2 = 736, 768
+			dim1, dim2 = 736, 752
 	elif splits[v] == 'net':
 		net_arch = splits[v+1]
 	elif splits[v] == 'bone':
@@ -86,19 +78,21 @@ for v in range(len(splits)):
 	elif splits[v] == 'fv':
 		if not splits[v+1] == 'None':
 			feature_version = int(splits[v+1]); print('feature version:{}'.format(feature_version))	
+
+def read_txt(txt_dir):
+    lines = []
+    with open(txt_dir, 'r+') as f:
+        lines = [line.strip() for line in f.readlines()]
+    return lines
 			
 DATA_DIR = '/data/datasets/{}'.format(dataset)
-x_train_dir = os.path.join(DATA_DIR, 'train_images') if not ext_flag else os.path.join(DATA_DIR, 'ext_train_images')
-y_train_dir = os.path.join(DATA_DIR, 'train_masks')	 if not ext_flag else os.path.join(DATA_DIR, 'ext_train_masks')
 
-x_valid_dir = os.path.join(DATA_DIR, 'val_images')
-y_valid_dir = os.path.join(DATA_DIR, 'val_masks')
+image_dir = DATA_DIR+'/{}'.format('images')
+masks_dir = DATA_DIR+'/{}'.format('masks')
 
-x_test_dir = os.path.join(DATA_DIR, 'test_images')
-y_test_dir = os.path.join(DATA_DIR, 'test_masks')
-
-if dataset == 'live_dead':
-	x_train_dir +='2'; x_valid_dir+= '2'; x_test_dir+='2'
+train_fns = read_txt(DATA_DIR+'/train_list.txt')
+valid_fns = read_txt(DATA_DIR+'/valid_list.txt')
+test_fns = read_txt(DATA_DIR+'/test_list.txt')
 
 # classes for data loading and preprocessing
 class Dataset:
@@ -120,12 +114,13 @@ class Dataset:
 	def __init__(
 			self, 
 			images_dir, 
-			masks_dir, 
+			masks_dir,
+			file_names,
 			classes=None, 
 			augmentation=None, 
 			preprocessing=None,
 	):
-		self.ids = natsorted(os.listdir(images_dir))
+		self.ids = file_names
 		self.images_fps = [os.path.join(images_dir, image_id) for image_id in self.ids]
 		self.masks_fps = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 	
@@ -138,9 +133,14 @@ class Dataset:
 	def __getitem__(self, i):
 	
 		# read data
-		image = cv2.imread(self.images_fps[i])
-		image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-		mask = cv2.imread(self.masks_fps[i], 0)
+# 		image = cv2.imread(self.images_fps[i])
+# 		image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# 		mask = cv2.imread(self.masks_fps[i], 0)
+		image = io.imread(self.images_fps[i])
+		mask = io.imread(self.masks_fps[i])
+		# image to RGB
+		image = np.uint8((image-image.min())*255/(image.max()-image.min()))
+		image = np.stack([image,image,image],axis =-1)
 #         print(np.unique(mask))
 		# extract certain classes from mask (e.g. cars)
 		masks = [(mask == v) for v in self.class_values]
@@ -213,10 +213,10 @@ import albumentations as A
 def round_clip_0_1(x, **kwargs):
 	return x.round().clip(0, 1)
 
-def get_validation_augmentation(dim = 832):
+def get_validation_augmentation(dim1 = 736, dim2 = 768):
 	"""Add paddings to make image shape divisible by 32"""
 	test_transform = [
-		A.PadIfNeeded(dim, dim)
+		A.PadIfNeeded(dim1, dim2)
 #         A.PadIfNeeded(384, 480)
 	]
 	return A.Compose(test_transform)
@@ -259,21 +259,6 @@ model.load_weights(best_weight)
 ## save model
 model.save(model_folder+'/ready_model.h5')
 
-# define optomizer
-optim = tf.keras.optimizers.Adam(0.001)
-
-# Segmentation models losses can be combined together by '+' and scaled by integer or float factor
-# set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
-dice_loss = sm.losses.DiceLoss(class_weights=np.array([1, 1, 1, 0.5]))
-focal_loss = sm.losses.CategoricalFocalLoss()
-total_loss = dice_loss + (1 * focal_loss)
-
-metrics = [sm.metrics.IOUScore(threshold=0.5), sm.metrics.FScore(threshold=0.5)]
-
-# compile keras model with defined optimozer, loss and metrics
-model.compile(optim, total_loss, metrics)
-
-# result_dir 
 result_dir = os.path.join(model_folder,'eval_train_val_test')
 generate_folder(result_dir)
 
@@ -282,22 +267,26 @@ generate_folder(result_dir)
 subsets = ['test']
 # subset = subsets[2]
 for subset in subsets:
+	subset = subsets[0]
 	print('processing subset :{}'.format(subset))
+	if subset == 'test':
+		img_fns = test_fns
 	if subset == 'val':
-		x_test_dir = x_valid_dir; y_test_dir = y_valid_dir
+		img_fns = valid_fns
 	elif subset == 'train':
-		x_test_dir = x_train_dir; y_test_dir = y_train_dir
+		img_fns = train_fns
 
 	test_dataset = Dataset(
-		x_test_dir, 
-		y_test_dir, 
+		image_dir, 
+		masks_dir,
+		file_names = img_fns,
 		classes=CLASSES, 
-		augmentation=get_validation_augmentation(val_dim),
+		augmentation=get_validation_augmentation(test_dim1,test_dim2),
 		preprocessing=get_preprocessing(preprocess_input),
 	)
 
 	test_dataloader = Dataloder(test_dataset, batch_size=1, shuffle=False)
-
+	print(test_dataloader[0][0].shape)
 	nb_test = nb_train_test if subset == 'train' else len(test_dataloader)
 
 	random.seed(0)
@@ -313,6 +302,11 @@ for subset in subsets:
 		_, gt_mask = test_dataset[i];gt_masks.append(gt_mask)
 	gt_masks = np.stack(gt_masks);gt_maps = np.argmax(gt_masks,axis=-1)
 
+	## reshape
+	offset = 8
+	pr_masks = pr_masks[:,:,offset:-offset]
+	gt_masks = gt_masks[:,:,offset:-offset,:]
+	print(pr_masks.shape); print(gt_masks.shape)
 	## IoU and dice coefficient
 	iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_masks, pr_masks)
 	print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
@@ -331,10 +325,13 @@ for subset in subsets:
 		recall_scores.append(recall(i,cf_mat_reord))
 		f1_scores.append(f1_score(i,cf_mat_reord))
 	print('Precision:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2], prec_scores[3]))
+	print('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
 	print('Recall:{:.4f},{:,.4f},{:.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2], recall_scores[3]))
+	print('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
 	# f1 score
 	print('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
-	print('mean f1-score (pixel):{:.4f}'.format(np.mean(f1_scores)))
+	print('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
+
 	with open(result_dir+'/{}_summary_{}.txt'.format(subset, epoch), 'w+') as f:
 		# save iou and dice
 		f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}\n'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
@@ -350,4 +347,38 @@ for subset in subsets:
 		f.write('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
 		# save f1-score
 		f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2],f1_scores[3]))
+		f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
+
+	# confusion matrix 2
+	print('Confusion matrix2:')
+	cf_mat_reord1 = cf_mat_reord[1:,1:]
+	print(cf_mat_reord1)
+	prec_scores = []; recall_scores = []; f1_scores = []; iou_scores=[]
+	for i in range(cf_mat_reord1.shape[0]):
+		prec_scores.append(precision(i,cf_mat_reord1))
+		recall_scores.append(recall(i,cf_mat_reord1))
+		f1_scores.append(f1_score(i,cf_mat_reord1))
+	print('Precision:{:.4f},{:,.4f},{:.4f}'.format(prec_scores[0], prec_scores[1], prec_scores[2]))
+	print('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
+	print('Recall:{:.4f},{:,.4f},{:.4f}'.format(recall_scores[0], recall_scores[1], recall_scores[2]))
+	print('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
+	# f1 score
+	print('f1-score (pixel):{:.4f},{:,.4f},{:.4f}'.format(f1_scores[0],f1_scores[1],f1_scores[2]))
+	print('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
+
+	with open(result_dir+'/{}_summary_cell_{}.txt'.format(subset, epoch), 'w+') as f:
+		# save iou and dice
+# 		f.write('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}\n'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
+# 		f.write('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}\n'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
+		# save confusion matrix
+		f.write('confusion matrix:\n')
+		np.savetxt(f, cf_mat_reord1, fmt='%-7d')
+		# save precision
+		f.write('precision:{:.4f},{:,.4f},{:.4f}\n'.format(prec_scores[0], prec_scores[1], prec_scores[2]))
+		f.write('mean precision: {:.4f}\n'.format(np.mean(prec_scores)))
+		# save recall
+		f.write('recall:{:.4f},{:,.4f},{:.4f}\n'.format(recall_scores[0], recall_scores[1], recall_scores[2]))
+		f.write('mean recall:{:.4f}\n'.format(np.mean(recall_scores)))
+		# save f1-score
+		f.write('f1-score (pixel):{:.4f},{:,.4f},{:.4f}\n'.format(f1_scores[0],f1_scores[1],f1_scores[2]))
 		f.write('mean f1-score (pixel):{:.4f}\n'.format(np.mean(f1_scores)))
