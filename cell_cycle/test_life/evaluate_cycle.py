@@ -1,6 +1,7 @@
 import os
 import cv2
 from skimage import io
+from tifffile import imread, imsave
 import tensorflow as tf
 import numpy as np
 import random
@@ -307,11 +308,30 @@ for subset in subsets:
 	pr_masks = pr_masks[:,:,offset:-offset]
 	gt_masks = gt_masks[:,:,offset:-offset,:]
 	print(pr_masks.shape); print(gt_masks.shape)
+
+	# save the prediction
+	save = True
+	if save:
+		pr_save_mask = np.concatenate([pr_masks[:,:,:,-1:],pr_masks[:,:,:,:-1]], axis = -1)
+		gt_save_mask = np.concatenate([gt_masks[:,:,:,-1:],gt_masks[:,:,:,:-1]], axis = -1)
+		test_ids = [test_dataset.ids[index] for index in test_indices]
+		## IoU and dice coefficient
+		iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_save_mask, pr_save_mask)
+		print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[0],iou_classes[1],iou_classes[2],iou_classes[3], mIoU))
+		print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[0],dice_classes[1],dice_classes[2],dice_classes[3], mDice))
+		pr_save_map = np.argmax(pr_save_mask,axis=-1)
+		pred_dir = os.path.join(model_folder, 'pred')
+		generate_folder(pred_dir)
+		for pi, fn in enumerate(test_ids):
+			imsave(pred_dir+'/{}'.format(fn), pr_save_map[pi,:,:])
+		io.imsave(model_folder+'/pr_{}.png'.format(fn.split('.')[0]), pr_save_map[pi,:,:])
+		
 	## IoU and dice coefficient
 	iou_classes, mIoU, dice_classes, mDice = iou_calculate(gt_masks, pr_masks)
 	print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
 	print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
 
+	pr_maps = pr_maps[:,:,offset:-offset]; gt_maps = gt_maps[:,:,offset:-offset]
 	y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 	cf_mat = confusion_matrix(y_true, y_pred)
 	cf_mat_reord = np.zeros(cf_mat.shape)

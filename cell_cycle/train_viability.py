@@ -36,7 +36,7 @@ parser.add_argument("--feat_version", type=int, default = None)
 parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--batch_size", type=int, default = 2)
-parser.add_argument("--dataset", type=str, default = 'cycle_736x752')
+parser.add_argument("--dataset", type=str, default = 'viability_832x832')
 parser.add_argument("--upsample", type=str, default = 'upsampling')
 parser.add_argument("--pyramid_agg", type=str, default = 'sum')
 parser.add_argument("--filters", type=int, default = 256)
@@ -63,6 +63,10 @@ if args.dataset == 'cycle_736x752':
 	val_dim1, val_dim2 = 736, 768
 	test_dim1, test_dim2 = 736, 768
 	dim1, dim2 = 736, 752
+elif args.dataset == 'viability_832x832':
+	val_dim1, val_dim2 = 832, 832
+	test_dim1, test_dim2 = 832, 832
+	dim1, dim2 = 832, 832
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './datasets/{}'.format(args.dataset)
 
@@ -277,7 +281,9 @@ def get_preprocessing(preprocessing_fn):
 # BACKBONE = 'efficientnetb3'
 BACKBONE = args.backbone
 BATCH_SIZE = args.batch_size
-CLASSES = ['live', 'inter', 'dead']
+
+CLASSES = ['live', 'inter', 'dead'] if args.dataset == 'cycle_736x752' else ['live', 'dead']
+
 LR = args.lr
 EPOCHS = args.epoch
 
@@ -291,6 +297,9 @@ activation = 'sigmoid' if n_classes == 1 else 'softmax'
 net_func = globals()[args.net_type]
 
 encoder_weights='imagenet' if args.pre_train else None
+
+class_weights = [1 for i in range(n_classes-1)]
+class_weights.append(args.bk)
 
 if args.net_type == 'PSPNet':
 	model = net_func(BACKBONE, encoder_weights=encoder_weights, input_shape = (args.dim, args.dim, 3), classes=n_classes, activation=activation)
@@ -308,7 +317,6 @@ else:
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
 
-class_weights = [1,1,1,args.bk]
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
 if args.loss =='focal+dice':
@@ -372,7 +380,11 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, args.dim, args.dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, args.dim, args.dim, n_classes)
 
-model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/cycle_models/{}'.format(model_name)
+if args.dataset == 'cycle_736x752':
+	model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/cycle_models/{}'.format(model_name)
+elif args.dataset == 'viability_832x832':
+	model_folder = '/data/viability_models/{}'.format(model_name) if args.docker else './models/viability_models/{}'.format(model_name)
+
 generate_folder(model_folder)
 
 def concat_tile(im_list_2d):
@@ -454,9 +466,3 @@ history = model.fit_generator(
     validation_data=valid_dataloader, 
     validation_steps=len(valid_dataloader),
 )
-
-# save the training information
-# plot_history(model_folder+'/train_history.png',history)
-# record_dir = model_folder+'/train_dir'
-# generate_folder(record_dir)
-# save_history(record_dir, history)

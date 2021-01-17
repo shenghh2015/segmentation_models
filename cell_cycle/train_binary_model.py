@@ -45,16 +45,15 @@ parser.add_argument("--lr", type=float, default = 1e-3)
 parser.add_argument("--bk", type=float, default = 0.5)
 parser.add_argument("--focal_weight", type=float, default = 1)
 parser.add_argument("--pre_train", type=str2bool, default = True)
-parser.add_argument("--newest", type=str2bool, default = False)
 parser.add_argument("--train", type=int, default = None)
 parser.add_argument("--loss", type=str, default = 'focal+dice')
 parser.add_argument("--reduce_factor", type=float, default = 1.0)
 args = parser.parse_args()
 print(args)
 
-model_name = 'net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}-new-{}'.format(args.net_type,\
+model_name = 'binary-net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version, args.newest)
+		 	args.train, args.rot, args.dataset, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -277,7 +276,8 @@ def get_preprocessing(preprocessing_fn):
 # BACKBONE = 'efficientnetb3'
 BACKBONE = args.backbone
 BATCH_SIZE = args.batch_size
-CLASSES = ['live', 'inter', 'dead']
+# CLASSES = ['live', 'inter', 'dead']
+CLASSES = ['bk']
 LR = args.lr
 EPOCHS = args.epoch
 
@@ -308,24 +308,24 @@ else:
 # define optomizer
 optim = tf.keras.optimizers.Adam(LR)
 
-class_weights = [1,1,1,args.bk]
+# class_weights = [1,1,1,args.bk]
 # Segmentation models losses can be combined together by '+' and scaled by integer or float factor
 # set class weights for dice_loss (car: 1.; pedestrian: 2.; background: 0.5;)
 if args.loss =='focal+dice':
-	dice_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
+	dice_loss = sm.losses.DiceLoss()
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 	total_loss = dice_loss + (args.focal_weight * focal_loss)
 elif args.loss =='dice':
-	total_loss = sm.losses.DiceLoss(class_weights=np.array(class_weights))
+	total_loss = sm.losses.DiceLoss()
 elif args.loss =='jaccard':
-	total_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
+	total_loss = sm.losses.JaccardLoss()
 elif args.loss =='focal+jaccard':
-	dice_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
+	dice_loss = sm.losses.JaccardLoss()
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 	total_loss = dice_loss + (args.focal_weight * focal_loss)
 elif args.loss =='focal+jaccard+dice':
-	dice_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
-	jaccard_loss = sm.losses.JaccardLoss(class_weights=np.array(class_weights))
+	dice_loss = sm.losses.JaccardLoss()
+	jaccard_loss = sm.losses.JaccardLoss()
 	focal_loss = sm.losses.BinaryFocalLoss() if n_classes == 1 else sm.losses.CategoricalFocalLoss()
 	total_loss = dice_loss + jaccard_loss+ (args.focal_weight * focal_loss)
 elif args.loss == 'focal':
@@ -420,8 +420,8 @@ class HistoryPrintCallback(tf.keras.callbacks.Callback):
 						for i in range(0, len(valid_dataset),int(len(valid_dataset)/36)):
 								gt_vols.append(valid_dataloader[i][1])
 								pr_vols.append(self.model.predict(valid_dataloader[i]))
-						gt_vols = np.concatenate(gt_vols, axis = 0); gt_map = map2rgb(np.argmax(gt_vols,axis =-1))
-						pr_vols = np.concatenate(pr_vols, axis = 0); pr_map = map2rgb(np.argmax(pr_vols,axis =-1))
+						gt_vols = np.concatenate(gt_vols, axis = 0); gt_map = map2rgb(gt_vols.squeeze())
+						pr_vols = np.concatenate(pr_vols, axis = 0); pr_map = map2rgb(pr_vols.squeeze()>0.5)
 						if epoch == 0:
 								save_images(model_folder+'/ground_truth.png'.format(epoch), gt_map)
 						save_images(model_folder+'/pr-{}.png'.format(epoch), pr_map)
@@ -436,12 +436,6 @@ if args.reduce_factor < 1.0:
 else:
 	callbacks = [
 		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model-{epoch:03d}.h5', save_weights_only=True, save_best_only=True, mode='min'),
-		HistoryPrintCallback(),
-	]
-
-if args.newest:
-	callbacks = [
-		tf.keras.callbacks.ModelCheckpoint(model_folder+'/best_model-{epoch:03d}.h5', save_weights_only=True, save_best_only=False, mode='auto'),
 		HistoryPrintCallback(),
 	]
 
