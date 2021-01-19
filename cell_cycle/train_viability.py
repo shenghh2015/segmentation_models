@@ -63,7 +63,7 @@ if args.dataset == 'cycle_736x752':
 	val_dim1, val_dim2 = 736, 768
 	test_dim1, test_dim2 = 736, 768
 	dim1, dim2 = 736, 752
-elif args.dataset == 'viability_832x832':
+elif args.dataset == 'viability_832x832' or args.dataset == 'viability2_832x832':
 	val_dim1, val_dim2 = 832, 832
 	test_dim1, test_dim2 = 832, 832
 	dim1, dim2 = 832, 832
@@ -384,6 +384,8 @@ if args.dataset == 'cycle_736x752':
 	model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/cycle_models/{}'.format(model_name)
 elif args.dataset == 'viability_832x832':
 	model_folder = '/data/viability_models/{}'.format(model_name) if args.docker else './models/viability_models/{}'.format(model_name)
+elif args.dataset == 'viability2_832x832':
+	model_folder = '/data/viability2_models/{}'.format(model_name) if args.docker else './models/viability2_models/{}'.format(model_name)
 
 generate_folder(model_folder)
 

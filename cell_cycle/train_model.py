@@ -63,6 +63,10 @@ if args.dataset == 'cycle_736x752':
 	val_dim1, val_dim2 = 736, 768
 	test_dim1, test_dim2 = 736, 768
 	dim1, dim2 = 736, 752
+if args.dataset == 'cyc2_1488x1512':
+	val_dim1, val_dim2 = 1504, 1536
+	test_dim1, test_dim2 = 1504, 1536
+	dim1, dim2 = 1488, 1512
 
 DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './datasets/{}'.format(args.dataset)
 
@@ -372,7 +376,10 @@ print(train_dataloader[0][0].shape)
 assert train_dataloader[0][0].shape == (BATCH_SIZE, args.dim, args.dim, 3)
 assert train_dataloader[0][1].shape == (BATCH_SIZE, args.dim, args.dim, n_classes)
 
-model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/cycle_models/{}'.format(model_name)
+if args.dataset == 'cycle_736x752':
+	model_folder = '/data/cycle_models/{}'.format(model_name) if args.docker else './models/cycle_models/{}'.format(model_name)
+elif args.dataset == 'cyc2_1488x1512':
+	model_folder = '/data/cyc2_models/{}'.format(model_name) if args.docker else './models/cyc2_models/{}'.format(model_name)
 generate_folder(model_folder)
 
 def concat_tile(im_list_2d):
