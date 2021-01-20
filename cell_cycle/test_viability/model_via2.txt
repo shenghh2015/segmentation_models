@@ -1,0 +1,2 @@
+net-AtUnet-bone-efficientnetb3-pre-True-epoch-2400-batch-4-lr-0.0005-dim-512-train-None-rot-0-set-viability2_832x832-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum-bk-1.0-fl_weight-4.0-fv-None-new-False, 97
+net-Unet-bone-efficientnetb3-pre-True-epoch-2400-batch-4-lr-0.0005-dim-512-train-None-rot-0-set-viability2_832x832-loss-focal+dice-up-upsampling-filters-256-red_factor-1.0-pyr_agg-sum-bk-1.0-fl_weight-4.0-fv-None-new-False, 236
