@@ -33,3 +33,7 @@ python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train 
 python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 2400 --lr 5e-5 --dataset viability2_832x832 --gpu 4 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 1.0 --bk 1.0 --focal_weight 4 --docker False
 python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 2400 --lr 1e-5 --dataset viability2_832x832 --gpu 2 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 1.0 --bk 1.0 --focal_weight 4 --docker False
 python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 2400 --lr 5e-6 --dataset viability2_832x832 --gpu 3 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 1.0 --bk 1.0 --focal_weight 4 --docker False
+
+# Jan 21, 2021
+python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 2400 --lr 1e-4 --dataset viability2_832x832 --data_version 3 --gpu 0 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 1.0 --bk 1.0 --focal_weight 4 --docker True
+python train_viability.py --net_type Unet --backbone efficientnetb3 --pre_train True --batch_size 4 --dim 512 --epoch 2400 --lr 5e-4 --dataset viability2_832x832 --data_version 3 --gpu 0 --loss focal+dice --filters 256 --upsample upsampling --reduce_factor 1.0 --bk 1.0 --focal_weight 4 --docker True

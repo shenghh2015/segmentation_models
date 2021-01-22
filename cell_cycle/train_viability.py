@@ -37,6 +37,7 @@ parser.add_argument("--epoch", type=int, default = 2)
 parser.add_argument("--dim", type=int, default = 512)
 parser.add_argument("--batch_size", type=int, default = 2)
 parser.add_argument("--dataset", type=str, default = 'viability_832x832')
+parser.add_argument("--data_version", type=int, default = 0)
 parser.add_argument("--upsample", type=str, default = 'upsampling')
 parser.add_argument("--pyramid_agg", type=str, default = 'sum')
 parser.add_argument("--filters", type=int, default = 256)
@@ -52,9 +53,9 @@ parser.add_argument("--reduce_factor", type=float, default = 1.0)
 args = parser.parse_args()
 print(args)
 
-model_name = 'net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}-new-{}'.format(args.net_type,\
+model_name = 'net-{}-bone-{}-pre-{}-epoch-{}-batch-{}-lr-{}-dim-{}-train-{}-rot-{}-set-{}-dv-{}-loss-{}-up-{}-filters-{}-red_factor-{}-pyr_agg-{}-bk-{}-fl_weight-{}-fv-{}-new-{}'.format(args.net_type,\
 		 	args.backbone, args.pre_train, args.epoch, args.batch_size, args.lr, args.dim,\
-		 	args.train, args.rot, args.dataset, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version, args.newest)
+		 	args.train, args.rot, args.dataset, args.data_version, args.loss, args.upsample, args.filters, args.reduce_factor, args.pyramid_agg, args.bk, args.focal_weight, args.feat_version, args.newest)
 print(model_name)
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -63,7 +64,7 @@ if args.dataset == 'cycle_736x752':
 	val_dim1, val_dim2 = 736, 768
 	test_dim1, test_dim2 = 736, 768
 	dim1, dim2 = 736, 752
-elif args.dataset == 'viability_832x832' or args.dataset == 'viability2_832x832':
+elif 'viability' in args.dataset:
 	val_dim1, val_dim2 = 832, 832
 	test_dim1, test_dim2 = 832, 832
 	dim1, dim2 = 832, 832
@@ -73,9 +74,14 @@ DATA_DIR = '/data/datasets/{}'.format(args.dataset) if args.docker else './datas
 images_dir = DATA_DIR+'/images'
 masks_dir = DATA_DIR+'/masks'
 
-train_fns = read_txt(os.path.join(DATA_DIR, 'train_list.txt'))
-val_fns = read_txt(os.path.join(DATA_DIR, 'valid_list.txt'))
-test_fns = read_txt(os.path.join(DATA_DIR, 'test_list.txt'))
+if args.data_version < 3:
+		train_fns = read_txt(os.path.join(DATA_DIR, 'train_list.txt'))
+		val_fns = read_txt(os.path.join(DATA_DIR, 'valid_list.txt'))
+		test_fns = read_txt(os.path.join(DATA_DIR, 'test_list.txt'))
+else:
+		train_fns = read_txt(os.path.join(DATA_DIR, 'train{}_list.txt'.format(args.data_version)))
+		val_fns = read_txt(os.path.join(DATA_DIR, 'valid{}_list.txt'.format(args.data_version)))
+		test_fns = read_txt(os.path.join(DATA_DIR, 'test{}_list.txt'.format(args.data_version)))
 
 print('train:{}, valid:{}, test:{}'.format(len(train_fns),len(val_fns), len(test_fns)))
 
