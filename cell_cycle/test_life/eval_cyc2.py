@@ -313,11 +313,15 @@ for subset in subsets:
 		offset = 8
 		pr_masks = pr_masks[:,:,offset:-offset,:]
 		gt_masks = gt_masks[:,:,offset:-offset,:]
+		pr_maps = pr_maps[:,:,offset:-offset]
+		gt_maps = gt_maps[:,:,offset:-offset]
 		print(pr_masks.shape); print(gt_masks.shape)
-	elif dataset == 'cycle_736x752':
+	elif dataset == 'cyc2_1488x1512':
 		offset1, offset2 = 8, 12
-		pr_masks = pr_masks[:,-offset1:offset1,offset2:-offset2,:]
-		gt_masks = gt_masks[:,-offset1:offset1,offset2:-offset2,:]
+		pr_masks = pr_masks[:,offset1:-offset1,offset2:-offset2,:]
+		gt_masks = gt_masks[:,offset1:-offset1,offset2:-offset2,:]
+		pr_maps = pr_maps[:,offset1:-offset1,offset2:-offset2]
+		gt_maps = gt_maps[:,offset1:-offset1,offset2:-offset2]
 		print(pr_masks.shape); print(gt_masks.shape)
 	
 	# save the prediction
@@ -342,7 +346,6 @@ for subset in subsets:
 	print('iou_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mIoU: {:.4f}'.format(iou_classes[-1],iou_classes[0],iou_classes[1],iou_classes[2], mIoU))
 	print('dice_classes: {:.4f},{:.4f},{:.4f},{:.4f}; mDice: {:.4f}'.format(dice_classes[-1],dice_classes[0],dice_classes[1],dice_classes[2], mDice))
 
-	pr_maps = pr_maps[:,:,offset:-offset]; gt_maps = gt_maps[:,:,offset:-offset]
 	y_true=gt_maps.flatten(); y_pred = pr_maps.flatten()
 	cf_mat = confusion_matrix(y_true, y_pred)
 	cf_mat_reord = np.zeros(cf_mat.shape)
